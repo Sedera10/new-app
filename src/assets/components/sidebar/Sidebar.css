@@ -1,0 +1,107 @@
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    background: var(--bg-sidebar);
+    color: var(--text-sidebar);
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 1.5rem 0.75rem; /* Ajustement du padding pour le mode replié */
+    overflow-x: hidden;
+    z-index: 1050;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+}
+
+.sidebar.is-open {
+    width: 240px; /* Légèrement élargi pour un meilleur confort de lecture */
+}
+
+.sidebar.is-collapsed {
+    width: 70px;
+}
+
+/* Gestion propre des animations du texte au collapse */
+.sidebar .hide-on-collapse {
+    transition: opacity 0.2s ease, max-width 0.2s ease;
+    opacity: 1;
+    max-width: 200px;
+    display: inline-block;
+    white-space: nowrap;
+}
+
+.sidebar.is-collapsed .hide-on-collapse {
+    opacity: 0;
+    max-width: 0;
+    pointer-events: none;
+    /* On évite display: none pour préserver une transition fluide */
+    overflow: hidden; 
+}
+
+/* Forcer la couleur blanche du logo */
+.sidebar .brand {
+    color: var(--text-sidebar-active) !important;
+    white-space: nowrap;
+}
+
+/* Centrer les éléments (icônes et boutons) proprement en mode replié */
+.sidebar.is-collapsed .logo {
+    flex-direction: column-reverse;
+    gap: 1rem;
+}
+
+.sidebar .divider {
+    border: 0;
+    border-top: 1px solid var(--border-divider);
+    margin: 1.25rem 0;
+    opacity: 1; /* Annule l'opacité par défaut d'une hr Bootstrap */
+}
+
+/* FIX DU BLEU BOOTSTRAP : Ciblage fort avec ".sidebar .nav-link" */
+.sidebar .nav-link {
+    color: var(--text-sidebar) !important;
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+    white-space: nowrap;
+}
+
+/* État : Survol d'un lien classique */
+.sidebar .nav-link:hover {
+    color: var(--text-sidebar-hover) !important;
+    background-color: var(--bg-sidebar-link-hover);
+}
+
+/* État : Lien Actif */
+.sidebar .nav-link.nav-link-active {
+    color: var(--text-sidebar-active) !important;
+    background-color: var(--bg-btn-primary) !important;
+}
+
+/* État : Survol du lien actif (Optionnel mais garde le texte lumineux) */
+.sidebar .nav-link.nav-link-active:hover {
+    color: var(--text-sidebar-active) !important;
+}
+
+/* Les icônes à l'intérieur des liens héritent STRICTEMENT de la couleur du texte parent */
+.sidebar .nav-link i {
+    color: inherit !important;
+}
+
+/* Bouton de contrôle (Toggle) et Profil */
+.sidebar .toggle {
+    color: var(--text-sidebar-active);
+    transition: color 0.2s ease;
+}
+
+.sidebar .toggle:hover {
+    color: var(--text-sidebar-hover);
+}
+
+.sidebar .profile-title {
+    color: var(--text-sidebar);
+}
+
+/* Alignement parfait du pied de page du profil */
+.sidebar .profile-container {
+    padding-left: 0.5rem;
+    color: var(--text-sidebar);
+}

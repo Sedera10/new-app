@@ -1,0 +1,32 @@
+
+/* Nabar */
+.navbar {
+    min-height: 70px;
+    position: fixed;
+}
+
+/* Fix container issues so layout properly scales alongside sidebar */
+.layout-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.content-wrapper {
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-left: 240px; /* Base width of the expanded sidebar */
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.sidebar-collapsed .content-wrapper {
+    margin-left: 70px; /* Width of the collapsed sidebar */
+}
+
+.main-content {
+    margin-top: 60px; /* Offset for the fixed header height */
+    padding: 20px;
+    flex-grow: 1;
+    min-height: 700px;
+}

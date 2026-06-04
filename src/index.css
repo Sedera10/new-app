@@ -1,0 +1,28 @@
+:root {
+  /* Couleurs de base de l'application */
+  --bg-main: #FFFFFF;
+  --bg-sidebar: linear-gradient(
+        to bottom,
+        #000000,
+        #6D8196
+    );
+  --text-sidebar: #CBCBCB;
+  --text-sidebar-hover: #FFFFE3;
+  --text-sidebar-active: #FFFFFF;
+  --bg-sidebar-link-active: rgba(255, 255, 255, 0.12); /* Version pro de l'opacité */
+  --bg-sidebar-link-hover: rgba(255, 255, 255, 0.05);
+  
+  --border-divider: rgba(203, 203, 203, 0.2);
+  --bg-card: #FFFFE3;
+  --bg-btn-primary: #6D8196;
+  --text-btn-primary: #FFFFFF;
+  --text-primary: #000000;
+  --text-secondary: #4A4A4A;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+}

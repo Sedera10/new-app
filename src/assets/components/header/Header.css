@@ -1,0 +1,26 @@
+.main-header {
+    position: fixed;
+    top: 0;
+    right: 0;
+    /* Le header prend toute la largeur moins celle de la sidebar ouverte par défaut */
+    width: calc(100% - 240px); 
+    height: 60px;
+    background-color: var(--bg-main);
+    border-bottom: 1px solid var(--border-divider);
+    z-index: 1020; /* Juste en dessous de la sidebar (1050) mais au-dessus du contenu */
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Si votre application gère une classe sur le parent quand la sidebar se replie : */
+.sidebar-collapsed .main-header {
+    width: calc(100% - 70px);
+}
+
+
+/* Alignement et survol du bloc profil */
+.main-header .user-profile {
+    transition: opacity 0.2s;
+}
+.main-header .user-profile:hover {
+    opacity: 0.8;
+}
