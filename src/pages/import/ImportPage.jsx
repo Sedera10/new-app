@@ -29,10 +29,10 @@ export default function ImportPage() {
     });
 
     // Exemple de traitement futur de fichier 1 (le code est prêt et commenté)
-    /*
+    
     if (files.file1) {
       try {
-        await importFile1(files.file1, (prog) => {
+        const result1 = await importFile1(files.file1, (prog) => {
            setProgress(prev => ({ 
              ...prev, 
              file1: { percent: prog.percentage, message: prog.message } 
@@ -42,7 +42,7 @@ export default function ImportPage() {
         setProgress(prev => ({ ...prev, file1: { percent: 0, message: "Erreur" } }));
       }
     }
-    */
+    
   };
 
   return (
