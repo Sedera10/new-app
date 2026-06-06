@@ -1,6 +1,7 @@
 import { useState } from "react";
 import CircularProgress from "../../assets/components/UI/CircularProgress";
 import { importFile1 } from "../../services/imports/file1/index"; 
+import { importFile2 } from "../../services/imports/file2/index";
 
 export default function ImportPage() {
   const [files, setFiles] = useState({ file1: null, file2: null, file3: null });
@@ -31,10 +32,10 @@ export default function ImportPage() {
     setResults({ file1: null, file2: null, file3: null });
 
     // Exemple de traitement futur de fichier 1 (le code est prêt et commenté)
-    
+    let result1 = null;
     if (files.file1) {
       try {
-        const result1 = await importFile1(files.file1, (prog) => {
+        result1 = await importFile1(files.file1, (prog) => {
            setProgress(prev => ({ 
              ...prev, 
              file1: { percent: prog.percentage, message: prog.message } 
@@ -49,7 +50,48 @@ export default function ImportPage() {
         setProgress(prev => ({ ...prev, file1: { percent: 0, message: "Erreur" } }));
       }
     }
+
+    let result2 = null
+    const eg_result1 = {
+      touchedResources: new Set()
+    }
+    if (files.file2) {
+      try {
+        result2 = await importFile2(files.file2, eg_result1, (prog) => {
+           setProgress(prev => ({ 
+             ...prev, 
+             file2: { percent: prog.percentage, message: prog.message } 
+           }));
+        });
+        setResults(prev => ({ ...prev, file2: result2 }));
+        setProgress(prev => ({
+          ...prev,
+          file2: { percent: 100, message: "Termine" }
+        }));
+      } catch (error) {
+        setProgress(prev => ({ ...prev, file2: { percent: 0, message: "Erreur" } }));
+      }
+    }
+
+    let result3 = null
     
+    if (result2 && files.file3) {
+      try {
+        result2 = await importFile3(files.file3, result2, (prog) => {
+           setProgress(prev => ({ 
+             ...prev, 
+             file3: { percent: prog.percentage, message: prog.message } 
+           }));
+        });
+        setResults(prev => ({ ...prev, file3: result3 }));
+        setProgress(prev => ({
+          ...prev,
+          file3: { percent: 100, message: "Termine" }
+        }));
+      } catch (error) {
+        setProgress(prev => ({ ...prev, file3: { percent: 0, message: "Erreur" } }));
+      }
+    }
   };
 
   return (
@@ -162,13 +204,31 @@ export default function ImportPage() {
               {/* File 2 */}
               <div className="d-flex flex-column align-items-center">
                 <h6 className="fw-bold mb-3 d-flex align-items-center gap-2">
-                  <i className="bi bi-file-earmark-text text-secondary"></i> File 2
+                  <i className="bi bi-file-earmark-text text-secondary"></i> Tickets
                 </h6>
                 <CircularProgress 
                   percent={progress.file2.percent} 
                   currentStep={progress.file2.message} 
                   size={150} 
                 />
+                {results.file2 && (
+                  <div className="mb-2 text-center small">
+                    {results.file2.done?.length > 0 && (
+                      <div className="text-success">
+                        {results.file2.done.map((item, index) => (
+                          <div key={`file1-done-${index}`}>{item}</div>
+                        ))}
+                      </div>
+                    )}
+                    {results.file2.errors?.length > 0 && (
+                      <div className="text-danger">
+                        {results.file2.errors.map((item, index) => (
+                          <div key={`file1-error-${index}`}>{item}</div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* File 3 */}

@@ -6,13 +6,13 @@ import { createItem, searchItems } from '../../api'
 export const importFile1 = async (csvFile, onProgress = () => {}) => {
   const results = {
     done: [],
-    errors: []
+    errors: [],
+    touchedResources: new Set()
   };
-  const touchedResources = new Set();
 
   const AddResourceTouched = (resource) => {
     if (resource) {
-      touchedResources.add(resource);
+      results.touchedResources.add(resource);
     }
   };
 
