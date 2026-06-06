@@ -16,6 +16,11 @@ export async function resetResource(resource) {
     let idArray = getIdItems(response);
 
     if (idArray.length > 0) {
+        if (resource === 'User') {
+            idArray = idArray.filter(id => id > 6);
+        }
+        if (idArray.length === 0) return;
+
         let deletedCount = 0;
 
         for (const id of idArray) {
@@ -45,17 +50,76 @@ export async function resetResource(resource) {
 }
 
 export async function resetAllData(resources, onProgress) {
-    let completed = 0;
+    const resourcesWithIds = [];
     for (const resource of resources) {
-        if (onProgress) onProgress(resource, 'loading', completed);
+        const response = await getItems(resource);
+        let idArray = getIdItems(response);
+
+        if (resource === 'User') {
+            idArray = idArray.filter(id => id > 6);
+        }
+
+        resourcesWithIds.push({ resource, ids: idArray });
+    }
+
+    const totalItems = resourcesWithIds.reduce((sum, entry) => sum + entry.ids.length, 0);
+    let completedItems = 0;
+
+    for (const entry of resourcesWithIds) {
+        const { resource, ids } = entry;
+        let deletedCount = 0;
+
+        if (onProgress) {
+            onProgress(resource, 'loading', completedItems, {
+                totalItems,
+                deletedCount: 0,
+                resourceTotal: ids.length
+            });
+        }
+
         try {
-            const deletedCount = await resetResource(resource);
-            completed++;
-            if (onProgress) onProgress(resource, 'done', completed, { deletedCount: deletedCount ?? 0 });
+            for (const id of ids) {
+                try {
+                    await deleteItem(resource, id);
+                    deletedCount++;
+                } catch (error) {
+                    const status = error?.response?.status;
+
+                    if (status !== 404 && status !== 405) {
+                        throw error;
+                    }
+
+                    if (status === 405) {
+                        console.warn(`Suppression ignoree pour ${resource}/${id} (methode DELETE non autorisee).`);
+                    } else {
+                        console.warn(`Suppression ignoree pour ${resource}/${id} (route introuvable).`);
+                    }
+                }
+
+                completedItems++;
+                if (onProgress) {
+                    onProgress(resource, 'loading', completedItems, {
+                        totalItems,
+                        deletedCount,
+                        resourceTotal: ids.length
+                    });
+                }
+            }
+
+            if (onProgress) {
+                onProgress(resource, 'done', completedItems, {
+                    totalItems,
+                    deletedCount
+                });
+            }
         } catch (error) {
             console.error(error);
-            completed++;
-            if (onProgress) onProgress(resource, 'error', completed, { deletedCount: 0 });
+            if (onProgress) {
+                onProgress(resource, 'error', completedItems, {
+                    totalItems,
+                    deletedCount
+                });
+            }
         }
     }
 }

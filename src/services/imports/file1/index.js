@@ -1,13 +1,11 @@
-import { parseFile1CSV, extractStatus, extractLocations, extractManufacturers, extractModels,extractUsers, normalizeName } from './helper';
-import {
-  createValidationError, isPositive, isValidDateDMY, normalizeNumber, normalizeDate, normalizeCsvValue
-} from '../Global';
+import { parseFile1CSV, extractStatus, extractLocations, extractManufacturers, extractModels, extractUsers, normalizeName } from './helper';
+import { normalizeNumber, normalizeCsvValue } from '../Global';
 import { resetAllData } from "../../resetdata/resetService";
-import { createItem } from '../../api'
+import { createItem, searchItems } from '../../api'
 
 export const importFile1 = async (csvFile, onProgress = () => {}) => {
   const results = {
-    done: []
+    done: [],
     errors: []
   };
   const touchedResources = new Set();
@@ -29,14 +27,14 @@ export const importFile1 = async (csvFile, onProgress = () => {}) => {
 
     // EXTRACTION
     onProgress?.({ step: 'extracting', message: 'extracting', description: 'Extraction des colonnes...', percentage: 2 });
-    console.log("== Extraction des colonnes ==")
     const status = extractStatus(csvData);
     const locations = extractLocations(csvData);
     const manufacturers = extractManufacturers(csvData);
     const models = extractModels(csvData);
     const users = extractUsers(csvData);
+    console.log("Users : ",users)
 
-    const totalUnits = 1 + status.length + locations.length + manufacturers.length + models.length + csvData.length;
+    const totalUnits = 1 + status.length + locations.length + manufacturers.length + models.length + users.length + csvData.length;
     let completedUnits = 1;
 
     const updateProgress = ({ step, message, description }) => {
@@ -61,7 +59,7 @@ export const importFile1 = async (csvFile, onProgress = () => {}) => {
         statusMap[stateName] = idState
       } catch (error) {
         console.log("Erreur de creation status : " , error.message)
-        results.errors.push(`Status '${categoryName}': ${error.message}`);
+        results.errors.push(`Status '${stateName}': ${error.message}`);
       }
       completedUnits += 1;
       updateProgress({ step: 'status', message: 'status', description: 'creation des "statut"...' });
@@ -69,7 +67,6 @@ export const importFile1 = async (csvFile, onProgress = () => {}) => {
     results.done.push(`Nombre Status créés : ${Object.keys(statusMap).length}`)
 
     // == CREATION LOCATION ==
-    onProgress?.({ step: 'location', message: 'location', description: 'creation des "location"...' });
     const locationMap = {}
     for (const locName of locations) {
       try {
@@ -92,7 +89,6 @@ export const importFile1 = async (csvFile, onProgress = () => {}) => {
     results.done.push(`Nombre Location créés : ${Object.keys(locationMap).length}`)
 
     // == CREATION MANUFACTURER ==
-    onProgress?.({ step: 'manufacturer', message: 'manufacturer', description: 'creation des "manufacturer"...'});
     const manufacturerMap = {}
     for (const manu of manufacturers) {
       try {
@@ -114,7 +110,6 @@ export const importFile1 = async (csvFile, onProgress = () => {}) => {
     results.done.push(`Nombre Manufacturer créés : ${Object.keys(manufacturerMap).length}`)
 
     // == CREATION MODEL ==
-    onProgress?.({ step: 'model', message: 'model', description: 'creation des "model"...'});
     const modelMap = {}
     for (const model of models) {
       try {
@@ -136,35 +131,41 @@ export const importFile1 = async (csvFile, onProgress = () => {}) => {
     results.done.push(`Nombre Model créés : ${Object.keys(modelMap).length}`)
 
     // == CREATION USER ==
-    onProgress?.({ step: 'user', message: 'user', description: 'creation des "user"...'});
-    const userMap = {}
+    const userMap = {};
     for (const user of users) {
-      const normaleName = normalizeName(user)
       try {
-        const payload = {
-            name : normaleName,
-            firstname : userString.split(" ")[1],
-            realname : userString.split(" ")[0],
-            entities_id : 0, 
-            is_active: 1
-          }
-        const userCreated = await createItem("User", payload)
-        const idUserCreated = userCreated?.id;
+        // Chercher si le user existe déjà par son nom
+        const existing = await searchItems("User", [
+          { field: 1, searchtype: "equals", value: user }
+        ]);
 
-        AddResourceTouched('User');
-        userMap[normaleName] = idUserCreated
+        let idUser;
+
+        if (existing?.data?.length > 0) {
+          idUser = existing.data[0].id;
+          console.log(`User '${user}' déjà existant, id: ${idUser}`);
+        } else {
+          const userCreated = await createItem("User", { name: user });
+          idUser = userCreated?.id;
+          AddResourceTouched('User');
+          console.log(`User '${user}' créé, id: ${idUser}`);
+        }
+
+        userMap[user] = idUser;
+
       } catch (error) {
-        console.log("Erreur de creation 'user' : " , error.message)
-        results.errors.push(`User '${model}': ${error.message}`);
+        console.log("Erreur user :", error.message);
+        results.errors.push(`User '${user}': ${error.message}`);
       }
-      completedUnits += 1
-      updateProgress({ step: 'user', message: 'user', description: 'creation des "user"...'});
+
+      completedUnits += 1;
+      updateProgress({ step: 'user', message: 'user', description: 'Création des users...' });
     }
     results.done.push(`Nombre User créés : ${Object.keys(userMap).length}`)
 
     // == CREATION ELEMENTS ==
     let totalElements = 0
-    for(int i=0 ; i < csvData.length ; i++ ){
+    for(let i=0 ; i < csvData.length ; i++ ){
       const elementData = csvData[i];
 
       try {
@@ -176,7 +177,7 @@ export const importFile1 = async (csvFile, onProgress = () => {}) => {
         const serial = elementData.inventorynumber?.trim();
         const resource = normalizeCsvValue(elementData.itemtype)
         const userString = normalizeName(elementData.user?.trim());
-        const userId = userMap[userString] ?? userMap[userString] : null
+        const userId = userMap[userString] ? userMap[userString] : null
 
         const payload = {
           name : name,
@@ -189,16 +190,18 @@ export const importFile1 = async (csvFile, onProgress = () => {}) => {
           user_id : userId
         }
 
-        const elemenCreated = await createItem(resource, payload);
-        if(elemenCreated){
+        const elementCreated = await createItem(resource, payload);
+        if (elementCreated) {
           AddResourceTouched(resource);
-          totalElements =+ 1;
+          totalElements += 1;
         }
 
       } catch (error) {
           console.log("Erreur de creation 'Element' : " , error.message)
           results.errors.push(`Erreur de creation 'Element': ${error.message}`);
       }
+      completedUnits += 1;
+      updateProgress({ step: 'elements', message: 'elements', description: 'creation des "elements"...' });
     }
     results.done.push(`Elements créés : ${totalElements}`)
 

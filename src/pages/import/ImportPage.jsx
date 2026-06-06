@@ -5,6 +5,7 @@ import { importFile1 } from "../../services/imports/file1/index";
 export default function ImportPage() {
   const [files, setFiles] = useState({ file1: null, file2: null, file3: null });
   const [isImporting, setIsImporting] = useState(false);
+  const [results, setResults] = useState({ file1: null, file2: null, file3: null });
   
   // États de progression pour chaque fichier
   const [progress, setProgress] = useState({
@@ -27,6 +28,7 @@ export default function ImportPage() {
       file2: { percent: 0, message: "Démarrage..." },
       file3: { percent: 0, message: "Démarrage..." }
     });
+    setResults({ file1: null, file2: null, file3: null });
 
     // Exemple de traitement futur de fichier 1 (le code est prêt et commenté)
     
@@ -38,6 +40,11 @@ export default function ImportPage() {
              file1: { percent: prog.percentage, message: prog.message } 
            }));
         });
+        setResults(prev => ({ ...prev, file1: result1 }));
+        setProgress(prev => ({
+          ...prev,
+          file1: { percent: 100, message: "Termine" }
+        }));
       } catch (error) {
         setProgress(prev => ({ ...prev, file1: { percent: 0, message: "Erreur" } }));
       }
@@ -124,11 +131,32 @@ export default function ImportPage() {
                 <h6 className="fw-bold mb-3 d-flex align-items-center gap-2">
                   <i className="bi bi-file-earmark-text text-secondary"></i> File 1
                 </h6>
+                
                 <CircularProgress 
                   percent={progress.file1.percent} 
                   currentStep={progress.file1.message} 
                   size={150} 
                 />
+
+                {results.file1 && (
+                  <div className="mb-2 text-center small">
+                    {results.file1.done?.length > 0 && (
+                      <div className="text-success">
+                        {results.file1.done.map((item, index) => (
+                          <div key={`file1-done-${index}`}>{item}</div>
+                        ))}
+                      </div>
+                    )}
+                    {results.file1.errors?.length > 0 && (
+                      <div className="text-danger">
+                        {results.file1.errors.map((item, index) => (
+                          <div key={`file1-error-${index}`}>{item}</div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
               </div>
 
               {/* File 2 */}

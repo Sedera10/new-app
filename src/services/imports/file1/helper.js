@@ -42,25 +42,24 @@ export const extractModels = (csvData) => {
   return Object.keys(models);
 };
 
-export const extractUsers = (csvData) => {
-  const users = {};
-  csvData.forEach((row) => {
-    const user = row.user?.trim();
-    if (user && !users[user]) {
-      users[user] = true;
-    }
-  });
-  return Object.keys(users);
-};
-
 export const normalizeName = (value) => (value ?? '')
   .toString()
   .replace(/^\uFEFF/, '')
   .trim()
   .normalize('NFD')
   .replace(/[\u0300-\u036f]/g, '')
-  .toLowerCase()
-  .replace(/[\s_]+/g, '.');
+  .replace(/[^a-zA-Z0-9\s]/g, '');
+
+export const extractUsers = (csvData) => {
+  const users = {};
+  csvData.forEach((row) => {
+    const user = normalizeName(row.user);
+    if (user && !users[user]) {
+      users[user] = true;
+    }
+  });
+  return Object.keys(users);
+};
 
 const FILE1_SCHEMA = {
   fields: [

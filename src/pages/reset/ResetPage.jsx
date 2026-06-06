@@ -9,12 +9,19 @@ export default function ResetPage() {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [confirm, setConfirm] = useState(false);
+  const [completedItems, setCompletedItems] = useState(0);
+  const [totalItems, setTotalItems] = useState(0);
 
   const resources = getResourcesToWipe();
-  const total = resources.length;
-
   // Met à jour ou ajoute une étape dans la liste
   const handleProgress = (resource, status, completed, extra = {}) => {
+    if (Number.isFinite(completed)) {
+      setCompletedItems(completed);
+    }
+    if (Number.isFinite(extra.totalItems)) {
+      setTotalItems(extra.totalItems);
+    }
+
     setSteps(prev => {
       const index = prev.findIndex(s => s.resource === resource);
       const entry = { resource, status, completed, ...extra };
@@ -36,6 +43,8 @@ export default function ResetPage() {
     setDone(false);
     setConfirm(false)
     setSteps([]);
+    setCompletedItems(0);
+    setTotalItems(0);
 
     try {
       await initSession("glpi", "glpi");
@@ -49,12 +58,8 @@ export default function ResetPage() {
   };
 
   // Calcul de la progression globale
-  const completedCount = steps.filter(
-    s => s.status === "done" || s.status === "error"
-  ).length;
-
-  const progressPercent = total > 0
-    ? Math.round((completedCount / total) * 100)
+  const progressPercent = totalItems > 0
+    ? Math.round((completedItems / totalItems) * 100)
     : 0;
 
   const current = steps.find(s => s.status === "loading");

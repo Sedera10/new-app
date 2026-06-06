@@ -17,7 +17,7 @@ const normalizeCsvHeader = (value) => (value ?? '')
   .replace(/[\s_]+/g, '');
 
 
-const normalizeCsvValue = (value) => (value ?? '').toString().trim();
+export const normalizeCsvValue = (value) => (value ?? '').toString().trim();
 
 const normalizeCsvRows = (rows) => rows.map((row) => {
   const normalizedRow = {};
