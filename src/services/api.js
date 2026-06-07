@@ -12,7 +12,7 @@ const baseHeaders = {
   "App-Token": APP_TOKEN,
 };
 
-const api = axios.create({
+export const api = axios.create({
   baseURL: GLPI_BASE_URL,
   headers: baseHeaders,
 });
@@ -58,7 +58,7 @@ export async function killSession() {
 // ------------------------------------------------------------
 // Headers authentifiés (avec session)
 // ------------------------------------------------------------
-function authHeaders() {
+export function authHeaders() {
   const sessionToken = sessionStorage.getItem("glpi_session_token");
   if (!sessionToken) throw new Error("Session non initialisée. Appelez initSession() d'abord.");
   return {

@@ -35,11 +35,27 @@ export const extractModels = (csvData) => {
   const models = {};
   csvData.forEach((row) => {
     const model = row.model?.trim();
-    if (model && !models[model]) {
-      models[model] = true;
+    const itemtype = row.item_type?.trim();
+    if (model && itemtype) {
+      const key = `${itemtype}|${model}`;
+      if (!models[key]) {
+        models[key] = { itemtype, model };
+      }
     }
   });
-  return Object.keys(models);
+  return Object.values(models);
+};
+
+// Fonction pour obtenir le nom de la table de modèle selon le type
+export const getModelTableName = (itemtype) => {
+  const modelTables = {
+    'Computer': 'ComputerModel',
+    'Monitor': 'MonitorModel',
+    'Printer': 'PrinterModel',
+    'NetworkEquipment': 'NetworkEquipmentModel',
+    'Peripheral': 'PeripheralModel',
+  };
+  return modelTables[itemtype] || 'ComputerModel';
 };
 
 export const normalizeName = (value) => (value ?? '')

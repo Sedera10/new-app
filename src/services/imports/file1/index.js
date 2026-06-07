@@ -1,4 +1,4 @@
-import { parseFile1CSV, extractStatus, extractLocations, extractManufacturers, extractModels, extractUsers, normalizeName } from './helper';
+import { parseFile1CSV, extractStatus, extractLocations, extractManufacturers, extractModels, extractUsers, normalizeName, getModelTableName } from './helper';
 import { normalizeNumber, normalizeCsvValue } from '../Global';
 import { resetAllData } from "../../resetdata/resetService";
 import { createItem, searchItems } from '../../api'
@@ -111,19 +111,21 @@ export const importFile1 = async (csvFile, onProgress = () => {}) => {
 
     // == CREATION MODEL ==
     const modelMap = {}
-    for (const model of models) {
+    for (const modelInfo of models) {
       try {
         const payload = { 
-          name: model
+          name: modelInfo.model
         }
-        const computerModel = await createItem("ComputerModel", payload)
-        const idComputerModel = computerModel?.id;
+        const modelTable = getModelTableName(modelInfo.itemtype);
+        const createdModel = await createItem(modelTable, payload)
+        const idModel = createdModel?.id;
 
-        AddResourceTouched('ComputerModel');
-        modelMap[model] = idComputerModel
+        AddResourceTouched(modelTable);
+        modelMap[`${modelInfo.itemtype}|${modelInfo.model}`] = idModel
+        console.log(`[importFile1] Model '${modelInfo.model}' (${modelInfo.itemtype}) créé dans ${modelTable}, id: ${idModel}`);
       } catch (error) {
         console.log("Erreur de creation 'model' : " , error.message)
-        results.errors.push(`Model '${model}': ${error.message}`);
+        results.errors.push(`Model '${modelInfo.model}' (${modelInfo.itemtype}): ${error.message}`);
       }
       completedUnits += 1
       updateProgress({ step: 'model', message: 'model', description: 'creation des "model"...'});
@@ -173,9 +175,9 @@ export const importFile1 = async (csvFile, onProgress = () => {}) => {
         const statusId = statusMap[elementData.status?.trim()];
         const locationId = locationMap[elementData.location?.trim()];
         const manufacturerId = manufacturerMap[elementData.manufacturer?.trim()];
-        const modelId = modelMap[elementData.model?.trim()];
-        const serial = elementData.inventorynumber?.trim();
         const resource = normalizeCsvValue(elementData.itemtype)
+        const modelId = modelMap[`${resource}|${elementData.model?.trim()}`];
+        const serial = elementData.inventorynumber?.trim();
         const userString = normalizeName(elementData.user?.trim());
         const userId = userMap[userString] ? userMap[userString] : null
 
@@ -186,8 +188,13 @@ export const importFile1 = async (csvFile, onProgress = () => {}) => {
           entities_id : 0,
           location_id : normalizeNumber(locationId),
           manufacturer_id : normalizeNumber(manufacturerId),
-          computermodels : normalizeNumber(modelId),
           user_id : userId
+        };
+        
+        // Ajouter le modèle avec la bonne propriété selon le type
+        if (modelId) {
+          const modelProperty = `${resource.toLowerCase()}models`;
+          payload[modelProperty] = normalizeNumber(modelId);
         }
 
         const elementCreated = await createItem(resource, payload);

@@ -80,7 +80,7 @@ export async function resetAllData(resources, onProgress) {
         try {
             for (const id of ids) {
                 try {
-                    await deleteItem(resource, id);
+                    await deleteItem(resource, id, { force_purge: true });
                     deletedCount++;
                 } catch (error) {
                     const status = error?.response?.status;
