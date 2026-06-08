@@ -67,6 +67,16 @@ export function authHeaders() {
   };
 }
 
+// Headers pour upload multipart — sans Content-Type
+export function uploadHeaders() {
+  const sessionToken = sessionStorage.getItem("glpi_session_token");
+  if (!sessionToken) throw new Error("Session non initialisée.");
+  return {
+    "App-Token": APP_TOKEN,
+    "Session-Token": sessionToken,
+  };
+}
+
 // ------------------------------------------------------------
 // 3. GET — Obtenir une liste de ressources
 //    Exemple : getItems("Computer")

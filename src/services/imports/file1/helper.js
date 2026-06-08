@@ -35,7 +35,7 @@ export const extractModels = (csvData) => {
   const models = {};
   csvData.forEach((row) => {
     const model = row.model?.trim();
-    const itemtype = row.item_type?.trim();
+    const itemtype = row.itemtype?.trim();
     if (model && itemtype) {
       const key = `${itemtype}|${model}`;
       if (!models[key]) {

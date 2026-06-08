@@ -64,7 +64,7 @@ export const importFile1 = async (csvFile, onProgress = () => {}) => {
       completedUnits += 1;
       updateProgress({ step: 'status', message: 'status', description: 'creation des "statut"...' });
     }
-    results.done.push(`Nombre Status créés : ${Object.keys(statusMap).length}`)
+    results.done.push(`Status créés : ${Object.keys(statusMap).length}`)
 
     // == CREATION LOCATION ==
     const locationMap = {}
@@ -86,7 +86,7 @@ export const importFile1 = async (csvFile, onProgress = () => {}) => {
       completedUnits += 1;
       updateProgress({ step: 'location', message: 'location', description: 'creation des "location"...' });
     }
-    results.done.push(`Nombre Location créés : ${Object.keys(locationMap).length}`)
+    results.done.push(`Location créés : ${Object.keys(locationMap).length}`)
 
     // == CREATION MANUFACTURER ==
     const manufacturerMap = {}
@@ -130,7 +130,7 @@ export const importFile1 = async (csvFile, onProgress = () => {}) => {
       completedUnits += 1
       updateProgress({ step: 'model', message: 'model', description: 'creation des "model"...'});
     }
-    results.done.push(`Nombre Model créés : ${Object.keys(modelMap).length}`)
+    results.done.push(`Model créés : ${Object.keys(modelMap).length}`)
 
     // == CREATION USER ==
     const userMap = {};
@@ -163,7 +163,7 @@ export const importFile1 = async (csvFile, onProgress = () => {}) => {
       completedUnits += 1;
       updateProgress({ step: 'user', message: 'user', description: 'Création des users...' });
     }
-    results.done.push(`Nombre User créés : ${Object.keys(userMap).length}`)
+    results.done.push(`User créés : ${Object.keys(userMap).length}`)
 
     // == CREATION ELEMENTS ==
     let totalElements = 0
