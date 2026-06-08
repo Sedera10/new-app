@@ -1,0 +1,52 @@
+.stat-card {
+  position: relative;
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  flex: 1;
+  min-width: 100px;
+  max-width: 250px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border-left: 5px solid var(--color-primary-light, #5c6e61);
+  transition: transform 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+}
+
+.stat-card.highlight {
+  border-left-color: var(--color-accent, #cda77a);
+}
+
+.stat-icon {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+
+  font-size: 2rem;
+  color: #01070e;
+
+  opacity: 0.25;
+}
+
+.stat-header {
+  font-size: 14px;
+  text-transform: uppercase;
+  color: #777;
+  letter-spacing: 1px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.stat-value {
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--color-text-dark, #222);
+  margin-bottom: 8px;
+}
+
+.stat-desc {
+  font-size: 14px;
+  color: #888;
+}

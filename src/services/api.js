@@ -191,3 +191,33 @@ export async function searchItems(resource, criteria = [], params = {}) {
     throw new Error(getAxiosErrorMessage(error, `Erreur lors de la recherche dans ${resource}`));
   }
 }
+
+// Compte les items avec des filtres optionnels
+export const getItemCountFiltered = async (resource, criteria = []) => {
+  try {
+    const result = await searchItems(resource, criteria, { range: "0-0" });
+    return result?.totalcount || 0;
+  } catch {
+    return 0;
+  }
+};
+
+// Récupérer seulement le count, pas les données
+export const getItemCount = async (resource) => {
+  try {
+    const response = await api.get(`/${resource}`, {
+      headers: authHeaders(),
+      params: { range: "0-0" },
+    });
+    // GLPI retourne Content-Range: 0-0/TOTAL
+    const contentRange = response.headers["content-range"];
+    if (contentRange) {
+      const total = parseInt(contentRange.split("/")[1]);
+      return isNaN(total) ? 0 : total;
+    }
+    // Fallback : compter le tableau retourné
+    return Array.isArray(response.data) ? response.data.length : 0;
+  } catch {
+    return 0;
+  }
+};

@@ -7,10 +7,10 @@ export default function Sidebar({show, setShow}) {
     const navigate = useNavigate();
 
     const links = [
-        { name: "Dashboard", icon: "bi-house-door" },
-        { name: "Parc", icon: "bi-pc-display" },
-        { name: "Assistance", icon: "bi-headset" },
-        { name: "Gestion", icon: "bi-briefcase" },
+        { name: "Dashboard", icon: "bi-house-door", path: "/myglpi/dashboard" },
+        { name: "Éléments (Front)", icon: "bi-pc-display", path: "/myglpi/front/elements" },
+        { name: "Nouveau Ticket (Front)", icon: "bi-plus-circle", path: "/myglpi/front/tickets/create" },
+        { name: "Gestion Tickets (Back)", icon: "bi-ticket-detailed", path: "/myglpi/tickets" },
     ];
     return (
         <aside className={`sidebar d-flex flex-column ${show ? "is-open" : "is-collapsed"}`}>
@@ -41,6 +41,7 @@ export default function Sidebar({show, setShow}) {
                             onClick={(e) => {
                                 e.preventDefault();
                                 setActiveLink(link.name);
+                                if (link.path) navigate(link.path);
                             }}
                             className={`nav-link d-flex align-items-center rounded p-2 ${activeLink === link.name ? "nav-link-active" : ""}`}
                         >

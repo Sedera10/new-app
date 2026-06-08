@@ -5,9 +5,12 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Layout from './pages/Layout';
 import ProtectedRoute from './services/auth/ProtectedRoute';
 import ResetPage from './pages/reset/ResetPage';
-import LoginPage from './pages/Login/LoginPage';
+import LoginPage from './pages/login/LoginPage';
 import ImportPage from './pages/import/ImportPage';
 import Dashboard from './pages/backoffice/dashboard/Dashboard';
+import TicketsPage from './pages/backoffice/tickets/TicketsPage';
+import ElementsList from './pages/frontoffice/elements/ElementsList';
+import CreateTicket from './pages/frontoffice/tickets/CreateTicket';
 
 function App() {
   
@@ -37,6 +40,27 @@ function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>} 
+          />
+          <Route 
+            path="/myglpi/tickets" 
+            element={
+              <ProtectedRoute>
+                <TicketsPage />
+              </ProtectedRoute>} 
+          />
+          <Route 
+            path="/myglpi/front/elements" 
+            element={
+              <ProtectedRoute>
+                <ElementsList />
+              </ProtectedRoute>} 
+          />
+          <Route 
+            path="/myglpi/front/tickets/create" 
+            element={
+              <ProtectedRoute>
+                <CreateTicket />
               </ProtectedRoute>} 
           />
         </Route>
