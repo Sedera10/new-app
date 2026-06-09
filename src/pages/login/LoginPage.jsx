@@ -21,7 +21,7 @@ export default function LoginPage() {
     try {
       const auth = await initSession(credentials.username, credentials.password);
       if (auth) {
-        navigate("/myglpi/dashboard");
+        navigate("/myglpi/admin/dashboard");
       } else {
         setErrorDialog({ isOpen: true, message: "Identifiants incorrects ou problème de connexion." });
       }

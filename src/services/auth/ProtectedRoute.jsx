@@ -8,7 +8,7 @@ const ProtectedRoute = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/myglpi/login" replace />;
+    return <Navigate to="/myglpi/admin/login" replace />;
   }
   
   return children;

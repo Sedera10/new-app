@@ -1,4 +1,4 @@
-import { parseFile2CSV, TYPE_MAP, STATUS_MAP, PRIORITY_MAP, resolveItem, ItemsToTableau } from './helper';
+import { parseFile2CSV, TYPE_MAP, STATUS_MAP_GLPI, PRIORITY_MAP, resolveItem, ItemsToTableau } from './helper';
 import { normalizeDate, normalizeNumber } from '../Global';
 import { resetAllData } from "../../resetdata/resetService";
 import { createItem } from '../../api';
@@ -46,7 +46,7 @@ export const importFile2 = async (csvFile, result1, onProgress = () => {}) => {
         const typeId   = TYPE_MAP[ligne.type?.trim()];
         const titre    = ligne.titre?.toString().trim();
         const desc     = ligne.description?.toString().trim();
-        const statusId = STATUS_MAP[ligne.status?.trim()];
+        const statusId = STATUS_MAP_GLPI[ligne.status?.trim()];
         const prioriteId = PRIORITY_MAP[ligne.priority?.trim()];
         const items    = ItemsToTableau(ligne.items?.trim());
 

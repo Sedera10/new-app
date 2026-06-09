@@ -20,18 +20,24 @@ export const getTypeName = (id) => {
   ) || null;
 };
 
+export const MapToTableau = (map) => {
+    return Object.entries(map);
+}
+
 export const DetailsTicket = async (idTicket) => {
     try {
         const [
             ticket,
             ticketUsers,
             logs,
-            costs
+            costs,
+            items
         ] = await Promise.all([
             getItem('Ticket', idTicket),
             getItems(`Ticket/${idTicket}/Ticket_User`),
             getItems(`Ticket/${idTicket}/Log`),
-            getItems(`Ticket/${idTicket}/TicketCost`)
+            getItems(`Ticket/${idTicket}/TicketCost`),
+            getItems(`Ticket/${idTicket}/Item_Ticket`)
         ]);
         // ==========================
         // Demandeur
@@ -80,7 +86,9 @@ export const DetailsTicket = async (idTicket) => {
                 label: getStatusName(log.new_value)
             });
         });
-
+        // ==========================
+        // Coûts
+        // ==========================
         const costAssociate = costs.map(cost => ({
             id: cost.id,
             name: cost.name,
@@ -96,7 +104,21 @@ export const DetailsTicket = async (idTicket) => {
 
             durationMinutes:
                 Math.round(Number(cost.actiontime || 0) / 60)
-        }))
+        }));
+        // ==========================
+        // Elements
+        // ==========================
+        const elements = []
+        for (const row of items) {
+            const dataElement = await getItem(row.itemtype, row.items_id);
+            const element = {
+                id: row.items_id,
+                itemtype: row.itemtype,
+                name: dataElement.name,
+                serial: dataElement.serial,
+            };
+            elements.push(element);
+        }
 
         return {
             info: {
@@ -110,7 +132,8 @@ export const DetailsTicket = async (idTicket) => {
             },
             requester,
             statusHistory,
-            costs: costAssociate
+            costs: costAssociate,
+            elements: elements 
         };
 
     } catch (error) {

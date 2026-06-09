@@ -7,10 +7,9 @@ export default function Sidebar({show, setShow}) {
     const navigate = useNavigate();
 
     const links = [
-        { name: "Dashboard", icon: "bi-house-door", path: "/myglpi/dashboard" },
-        { name: "Éléments (Front)", icon: "bi-pc-display", path: "/myglpi/front/elements" },
-        { name: "Nouveau Ticket (Front)", icon: "bi-plus-circle", path: "/myglpi/front/tickets/create" },
-        { name: "Gestion Tickets (Back)", icon: "bi-ticket-detailed", path: "/myglpi/tickets" },
+        { name: "Dashboard", icon: "bi-house-door", path: "/myglpi/admin/dashboard" },
+        { name: "Status config", icon: "bi-pc-display", path: "/myglpi/admin/status" },
+        { name: "Gestion Tickets", icon: "bi-ticket-detailed", path: "/myglpi/admin/tickets" },
     ];
     return (
         <aside className={`sidebar d-flex flex-column ${show ? "is-open" : "is-collapsed"}`}>
@@ -79,7 +78,7 @@ export default function Sidebar({show, setShow}) {
                             <a 
                                 className={`dropdown-item nav-link fw-medium rounded ${activeLink === "Config Data/Import données" ? "nav-link-active" : ""}`}
                                 href="#" 
-                                onClick={(e) => { e.preventDefault(); setActiveLink("Config Data/Import données"); navigate("/myglpi/import") }}
+                                onClick={(e) => { e.preventDefault(); setActiveLink("Config Data/Import données"); navigate("/myglpi/admin/import") }}
                                 >
                                 <i className="bi bi-download fs-6 text-center" style={{ width: "20px" }}></i>
                                 <span className='ms-2'>Import données</span>
@@ -89,7 +88,7 @@ export default function Sidebar({show, setShow}) {
                             <a 
                                 className={`dropdown-item nav-link fw-medium rounded ${activeLink === "Config Data/Réinitialisation" ? "nav-link-active" : ""}`}
                                 href="#"
-                                onClick={(e) => { e.preventDefault(); setActiveLink("Config Data/Réinitialisation"); navigate("/myglpi/reset") }}
+                                onClick={(e) => { e.preventDefault(); setActiveLink("Config Data/Réinitialisation"); navigate("/myglpi/admin/reset") }}
                                 >
                                 <i className="bi bi-arrow-counterclockwise fs-6 text-center" style={{ width: "20px" }}></i>
                                 <span className='ms-2'>Réinitialisation</span>

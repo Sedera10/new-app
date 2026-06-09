@@ -14,13 +14,19 @@ export const TYPE_MAP = {
   "Demande":  2,
 };
 
-export const STATUS_MAP = {
+export const STATUS_MAP_GLPI = {
   "New":      1,
   "Assigned": 2,
   "Planned":  3,
   "Waiting":  4,
   "Solved":   5,
   "Closed":   6,
+};
+
+export const STATUS_MAP = {
+  "Nouveau":      1,
+  "In progress":  2,
+  "Terminé":   5,
 };
 
 export const PRIORITY_MAP = {

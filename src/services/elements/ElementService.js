@@ -70,17 +70,15 @@ export const getIconByType = (type) => {
     return icons[type] || "bi-box";
 };
 
-export const ListeElements = async (page = 1, limit = 20) => {
+export const ListeElements = async () => {
     try {
-
         const resources = getElementItems();
 
+        // 1. On charge ABSOLUMENT TOUS les éléments de chaque ressource sans restriction de range
         const results = await Promise.all(
             resources.map(async resource => {
-                const items = await getItems(resource, {
-                    range: `${(page - 1) * limit}-${page * limit - 1}`
-                });
-                return items.map(item => ({
+                const items = await getItems(resource); // Plus de paramètre range ici
+                return (items || []).map(item => ({
                     ...item,
                     itemtype: resource,
                 }));
@@ -88,7 +86,7 @@ export const ListeElements = async (page = 1, limit = 20) => {
         );
         const flat = results.flat();
         
-        // TRI GLOBAL (important)
+        // TRI GLOBAL
         const sorted = flat.sort((a, b) =>
             new Date(b.date_mod || b.date_creation) -
             new Date(a.date_mod || a.date_creation)
@@ -127,7 +125,8 @@ export const ListeElements = async (page = 1, limit = 20) => {
                     );
             })
         );
-        // Les images
+
+        // Les images (Attention : cela peut faire beaucoup de requêtes d'un coup si le parc est immense)
         const imageMap = {};
         await Promise.all(
             sorted.map(async el => {
@@ -149,7 +148,7 @@ export const ListeElements = async (page = 1, limit = 20) => {
         });
 
     } catch (error) {
-        console.error(error);
+        console.error("Erreur dans ListeElements global:", error);
         throw error;
     }
 };

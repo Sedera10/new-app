@@ -47,7 +47,7 @@ export default function ModalTicket({ selectedTicket }) {
                                     <div className="col-sm-6 col-md-3">
                                         <h6 className="text-muted small fw-bold mb-1">Statut</h6>
                                         <span className={`badge rounded-pill px-2 py-1.5 w-100 text-center ${
-                                            getStatusName(selectedTicket.info.status) === 'New' ? 'bg-primary' :
+                                            getStatusName(selectedTicket.info.status) === 'Nouveau' ? 'bg-primary' :
                                             getStatusName(selectedTicket.info.status) === 'Solved' ? 'bg-success' : 'bg-warning text-dark'
                                         }`}>
                                             {getStatusName(selectedTicket.info.status)}
@@ -78,6 +78,39 @@ export default function ModalTicket({ selectedTicket }) {
                                             {selectedTicket.requester ? `${selectedTicket.requester.name}` : "Non assigné"}
                                         </p>
                                     </div>
+                                </div>
+
+                                {/* Elements associés */}
+                                <div className="mt-2">
+                                    <h5 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: "var(--text-secondary)" }}>
+                                        <i className="bi bi-box"></i> Elements
+                                    </h5>
+                                    {selectedTicket.elements?.length > 0 ? (
+                                        <div className="table-responsive border rounded-3">
+                                            <table className="table table-hover align-middle mb-0">
+                                                <thead className="table-light text-muted small uppercase">
+                                                    <tr>
+                                                        <th className="px-3">Type</th>
+                                                        <th className="px-3">Nom</th>
+                                                        <th className="text-end px-3">Numero de serie</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {selectedTicket.elements.map(elem => (
+                                                        <tr key={elem.id}>
+                                                            <td className="fw-medium px-3 text-secondary">{elem.itemtype}</td>
+                                                            <td className="fw-medium px-3 text-secondary">{elem.name}</td>
+                                                            <td className="text-end fw-bold px-3 text-dark">{elem.serial}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    ) : (
+                                        <div className="p-3 bg-light rounded-3 text-center border text-muted small">
+                                            Aucun elements associés pour ce ticket.
+                                        </div>
+                                    )}
                                 </div>
                                 
                                 {/* Historique des statuts style Timeline épurée */}
