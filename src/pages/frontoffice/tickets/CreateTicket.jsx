@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getItems, createItem } from "../../../services/api"
+import { CountElements, getElementItems, ListeElements } from "../../../services/elements/ElementService";
 
 // Mock data pour la liste des éléments qu'on peut associer
 const MOCK_AVAILABLE_ELEMENTS = [
@@ -10,6 +12,8 @@ const MOCK_AVAILABLE_ELEMENTS = [
 
 export default function CreateTicket() {
     const [title, setTitle] = useState("");
+    const [users, setUsers] = useState([]);
+    const [elements, setElements] = useState([]);
     const [type, setType] = useState("Incident");
     const [description, setDescription] = useState("");
     const [selectedElements, setSelectedElements] = useState([]);
@@ -21,6 +25,14 @@ export default function CreateTicket() {
             setSelectedElements([...selectedElements, elId]);
         }
     };
+
+    useEffect(() => {
+        const loadData = async () => {
+            const items = await ListeElements(1, 30);
+            setElements(items);
+            const users = await getItems("Users")
+        }
+    }, [])
 
     const handleSubmit = (e) => {
         e.preventDefault();
