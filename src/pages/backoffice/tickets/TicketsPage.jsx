@@ -1,4 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getItems } from "../../../services/api";
+import { forEach } from "jszip";
+import { DetailsTicket, getPriorityName, getStatusName, getTypeName } from "../../../services/tickets/TicketService";
+import { DetailsTickets } from "../../../services/dashboard/DashboardService";
+import ModalTicket from "../../../assets/components/UI/ModalTicket";
 
 // Mock data
 const MOCK_TICKETS = [
@@ -9,6 +14,29 @@ const MOCK_TICKETS = [
 
 export default function TicketsPage() {
     const [selectedTicket, setSelectedTicket] = useState(null);
+    const [tickets, setTickets] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const formatTickets = async () => {
+            try {
+                setLoading(true);
+                const initTickets = await getItems("Ticket");
+                const formatted = await Promise.all(
+                    initTickets.map(ticket =>
+                        DetailsTicket(ticket.id)
+                    )
+                );
+                setTickets(formatted);
+            } catch (error) {
+                console.error("Erreur lors du chargement des tickets :",error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        formatTickets();
+    }, []);
 
     return (
         <div className="container p-4">
@@ -29,94 +57,58 @@ export default function TicketsPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {MOCK_TICKETS.map(ticket => (
-                                <tr key={ticket.id}>
-                                    <td className="fw-medium text-secondary">{ticket.id}</td>
-                                    <td className="fw-bold">{ticket.title}</td>
-                                    <td>
-                                        <span className={`badge rounded-pill text-bg-light border text-dark`}>
-                                            {ticket.type}
-                                        </span>
-                                    </td>
-                                    <td>{ticket.priority}</td>
-                                    <td>
-                                        <span className={`badge rounded-pill ${
-                                            ticket.status === 'Nouveau' ? 'text-bg-primary' :
-                                            ticket.status === 'Résolu' ? 'text-bg-success' : 'text-bg-warning'
-                                        }`}>
-                                            {ticket.status}
-                                        </span>
-                                    </td>
-                                    <td className="text-muted small">{ticket.date}</td>
-                                    <td className="text-end">
-                                        <button 
-                                            className="btn btn-sm btn-outline-secondary rounded-pill px-3"
-                                            onClick={() => setSelectedTicket(ticket)}
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#ticketModal"
-                                        >
-                                            Voir la fiche
-                                        </button>
+                            {loading ? (
+                                <tr>
+                                    <td colSpan="7" className="text-center py-5">
+                                        <div
+                                            className="spinner-border text-secondary"
+                                            role="status"
+                                        />
+                                        <p className="mt-2 mb-0">
+                                            Chargement des tickets...
+                                        </p>
                                     </td>
                                 </tr>
-                            ))}
+                            ) : (
+                                tickets.map(ticket => (
+                                    <tr key={ticket.info.id}>
+                                        <td className="fw-medium text-secondary">{ticket.info.id}</td>
+                                        <td className="fw-bold">{ticket.info.name}</td>
+                                        <td>
+                                            <span className={`badge rounded-pill text-bg-light border text-dark`}>
+                                                {getTypeName(ticket.info.type)}
+                                            </span>
+                                        </td>
+                                        <td>{getPriorityName(ticket.info.priority)}</td>
+                                        <td>
+                                            <span className={`badge rounded-pill ${
+                                                getStatusName(ticket.info.status) === 'New' ? 'text-bg-primary' :
+                                                getStatusName(ticket.info.status) === 'Solved' ? 'text-bg-success' : 'text-bg-warning'
+                                            }`}>
+                                                {getStatusName(ticket.info.status)}
+                                            </span>
+                                        </td>
+                                        <td className="text-muted small">{ticket.info.date}</td>
+                                        <td className="text-end">
+                                            <button 
+                                                className="btn btn-sm btn-outline-secondary rounded-pill px-3"
+                                                onClick={() => setSelectedTicket(ticket)}
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#ticketModal"
+                                            >
+                                                Voir la fiche
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                 </div>
             </div>
 
             {/* Modal for Ticket details */}
-            <div className="modal fade" id="ticketModal" tabIndex="-1" aria-labelledby="ticketModalLabel" aria-hidden="true">
-                <div className="modal-dialog modal-dialog-centered">
-                    <div className="modal-content border-0 shadow rounded-4">
-                        <div className="modal-header border-bottom-0">
-                            <h5 className="modal-title fw-bold" id="ticketModalLabel">
-                                Fiche Ticket #{selectedTicket?.id}
-                            </h5>
-                            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div className="modal-body p-4 pt-2">
-                            {selectedTicket && (
-                                <div className="d-flex flex-column gap-3">
-                                    <div>
-                                        <h6 className="text-muted small mb-1">Titre</h6>
-                                        <p className="fw-medium mb-0">{selectedTicket.title}</p>
-                                    </div>
-                                    <div className="row">
-                                        <div className="col-6">
-                                            <h6 className="text-muted small mb-1">Type</h6>
-                                            <span className="badge bg-light text-dark border">{selectedTicket.type}</span>
-                                        </div>
-                                        <div className="col-6">
-                                            <h6 className="text-muted small mb-1">Statut</h6>
-                                            <span className="badge bg-secondary">{selectedTicket.status}</span>
-                                        </div>
-                                    </div>
-                                    <div className="row">
-                                        <div className="col-6">
-                                            <h6 className="text-muted small mb-1">Priorité</h6>
-                                            <p className="mb-0 fw-medium">{selectedTicket.priority}</p>
-                                        </div>
-                                        <div className="col-6">
-                                            <h6 className="text-muted small mb-1">Date</h6>
-                                            <p className="mb-0 fw-medium">{selectedTicket.date}</p>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <h6 className="text-muted small mb-1">Description</h6>
-                                        <div className="p-3 bg-light rounded-3 text-secondary" style={{ fontSize: "0.9rem"}}>
-                                            {selectedTicket.description}
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                        <div className="modal-footer border-top-0">
-                            <button type="button" className="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Fermer</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <ModalTicket selectedTicket={selectedTicket} />
             
         </div>
     );

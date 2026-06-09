@@ -54,6 +54,18 @@ export const getModelTableName = (itemtype) => {
     'Printer': 'PrinterModel',
     'NetworkEquipment': 'NetworkEquipmentModel',
     'Peripheral': 'PeripheralModel',
+    'Phone' : 'PhoneModel', 
+  };
+  return modelTables[itemtype] || 'ComputerModel';
+};
+export const getModelFieldName = (itemtype) => {
+  const modelTables = {
+    'Computer': 'computermodels_id',
+    'Monitor': 'monitormodels_id',
+    'Printer': 'printermodels_id',
+    'NetworkEquipment': 'networkequipmentmodels_id',
+    'Peripheral': 'peripheralmodels_id',
+    'Phone' : 'phonemodels_id', 
   };
   return modelTables[itemtype] || 'ComputerModel';
 };

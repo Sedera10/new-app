@@ -179,16 +179,18 @@ export const importFile1 = async (csvFile, onProgress = () => {}) => {
         const modelId = modelMap[`${resource}|${elementData.model?.trim()}`];
         const serial = elementData.inventorynumber?.trim();
         const userString = normalizeName(elementData.user?.trim());
-        const userId = userMap[userString] ? userMap[userString] : null
+        const userId = userMap[userString] ? userMap[userString] : 0
 
         const payload = {
           name : name,
           serial : serial,
           otherserial : serial,
+          computermodels_id : modelId,
+          states_id: statusId,
           entities_id : 0,
-          location_id : normalizeNumber(locationId),
-          manufacturer_id : normalizeNumber(manufacturerId),
-          user_id : userId
+          locations_id : normalizeNumber(locationId),
+          manufacturers_id : normalizeNumber(manufacturerId),
+          users_id : userId
         };
         
         // Ajouter le modèle avec la bonne propriété selon le type

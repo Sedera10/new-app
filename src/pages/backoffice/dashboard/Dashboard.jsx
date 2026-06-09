@@ -1,14 +1,7 @@
 import { useState, useEffect } from "react";
 import StatCard from "../../../assets/components/UI/StatCard";
 import { DetailsElements, DetailsTickets, getElementItems } from "../../../services/dashboard/DashboardService";
-
-const ticketsByType = [
-    { type: "Incident", count: 18 },
-    { type: "Demande", count: 24 },
-    { type: "Problème", count: 3 },
-    { type: "Changement", count: 1 }
-];
-
+import './Dashboard.css'
 
 export default function Dashboard() {
     // console.log("Session : ", sessionStorage.getItem("glpi_session_token"))
