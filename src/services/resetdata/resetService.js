@@ -12,7 +12,7 @@ export const getIdItems = (response) => {
 }
 
 export async function resetResource(resource) {
-    const response = await getItems(resource);
+    const response = await getItems(resource, { range: "0-9999" });
     let idArray = getIdItems(response);
 
     if (idArray.length > 0) {
@@ -51,8 +51,18 @@ export async function resetResource(resource) {
 
 export async function resetAllData(resources, onProgress) {
     const resourcesWithIds = [];
+
     for (const resource of resources) {
-        const response = await getItems(resource);
+        if (onProgress) {
+            onProgress(resource, 'loading', 0, {
+                totalItems: 0,
+                deletedCount: 0,
+                resourceTotal: 0,
+                message: 'Récupération des éléments...'
+            });
+        }
+
+        const response = await getItems(resource, { range: "0-9999" });
         let idArray = getIdItems(response);
 
         if (resource === 'User') {
@@ -73,7 +83,8 @@ export async function resetAllData(resources, onProgress) {
             onProgress(resource, 'loading', completedItems, {
                 totalItems,
                 deletedCount: 0,
-                resourceTotal: ids.length
+                resourceTotal: ids.length,
+                message: ids.length > 0 ? 'Suppression en cours...' : 'Aucun élément à supprimer'
             });
         }
 
@@ -101,7 +112,8 @@ export async function resetAllData(resources, onProgress) {
                     onProgress(resource, 'loading', completedItems, {
                         totalItems,
                         deletedCount,
-                        resourceTotal: ids.length
+                        resourceTotal: ids.length,
+                        message: `Suppression en cours (${completedItems}/${totalItems})...`
                     });
                 }
             }

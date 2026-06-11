@@ -18,7 +18,7 @@ export default function TicketsList() {
     const loadData = async () => {
         try {
             setLoading(true);
-            const rawTickets = await getItems("Ticket");
+            const rawTickets = await getItems("Ticket", { range:"0-9999"});
             const statuses = await fetchStatuses();
             
             // On récupère les détails complets (coûts, historique, etc.) pour chaque ticket

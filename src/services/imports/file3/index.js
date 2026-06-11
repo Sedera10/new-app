@@ -1,7 +1,10 @@
 import { parseFile3CSV } from './helper';
 import { normalizeNumber } from '../Global';
-import { resetAllData } from "../../resetdata/resetService";
+import { rollbackImportedResources } from "../rollback";
 import { createItem } from '../../api';
+
+const numberOrZero = (value) => normalizeNumber(value) ?? 0;
+const secondsOrZero = (value) => Math.round(numberOrZero(value));
 
 export const importFile3 = async (csvFile, result2, onProgress = () => {}) => {
   const results = {
@@ -56,9 +59,9 @@ export const importFile3 = async (csvFile, result2, onProgress = () => {}) => {
         const payload = {
           tickets_id:    idTicket,
           name:          `Coût ticket #${ref}`,
-          actiontime:    normalizeNumber(ds),
-          cost_time:     normalizeNumber(tc),
-          cost_fixed:    normalizeNumber(fc),
+          actiontime:    secondsOrZero(ds),
+          cost_time:     numberOrZero(tc),
+          cost_fixed:    numberOrZero(fc),
           cost_material: 0,
           entities_id:   0,
         };
@@ -87,9 +90,11 @@ export const importFile3 = async (csvFile, result2, onProgress = () => {}) => {
     return results;
 
   } catch (error) {
-    if (results.touchedResources.size > 0) {
-      await resetAllData(Array.from(results.touchedResources));
-    }
+    await rollbackImportedResources({
+      touchedResources: results.touchedResources,
+      onProgress,
+      label: 'Erreur file3'
+    });
     results.errors.push(`Erreur générale: ${error.message}`);
     throw error;
   }

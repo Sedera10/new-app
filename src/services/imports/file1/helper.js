@@ -67,7 +67,7 @@ export const getModelFieldName = (itemtype) => {
     'Peripheral': 'peripheralmodels_id',
     'Phone' : 'phonemodels_id', 
   };
-  return modelTables[itemtype] || 'ComputerModel';
+  return modelTables[itemtype] || 'computermodels_id';
 };
 
 export const normalizeName = (value) => (value ?? '')

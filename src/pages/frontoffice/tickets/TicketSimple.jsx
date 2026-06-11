@@ -56,7 +56,7 @@ export default function TicketsSimple() {
             if (showLoader) setLoading(true);
             
             // 1 seule requête API au lieu de 50+ !
-            const rawTickets = await getItems("Ticket", { range: "0-100" }); 
+            const rawTickets = await getItems("Ticket", { range: "0-9999" }); 
             const statuses = await fetchStatuses();
 
             // On formate les données pour respecter la structure { info: {...} } attendue par tes cartes

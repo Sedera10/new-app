@@ -14,16 +14,19 @@ export default function StatCard({
         : numericAmount.toLocaleString('fr-FR');
 
     return (
-        <div className="stat-card highlight my-3">
+        <div className="stat-card border-0 shadow-sm rounded-4 p-4 h-100 position-relative overflow-hidden">
             {icon && (
                 <div className="stat-icon">
                     <i className={icon}></i>
                 </div>
             )}
 
-            <div className="stat-header">{title}</div>
-            <div className="stat-value">{displayValue}</div>
-            <div className="stat-desc">{footerText}</div>
+            <div className="stat-header text-uppercase text-muted small fw-bold mb-2">{title}</div>
+            <div className="stat-value fw-bolder text-dark mb-2">{displayValue}</div>
+            <div className="stat-desc text-muted small m-0">{footerText}</div>
+            
+            {/* Ligne décorative discrète en bas de la carte */}
+            <div className="stat-card-indicator position-absolute bottom-0 start-0 end-0" style={{ height: "4px" }}></div>
         </div>
     );
 }

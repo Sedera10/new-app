@@ -11,6 +11,7 @@ export const normalizeName = (value) => (value ?? '')
 
 export const TYPE_MAP = {
   "Incident": 1,
+  "Request": 2,
   "Demande":  2,
 };
 
@@ -18,6 +19,7 @@ export const STATUS_MAP_GLPI = {
   "New":      1,
   "assigned": 2,
   "In progress":  2,
+  "In Progress (assigned)":2,
   "Closed":   6,
 };
 
@@ -33,6 +35,7 @@ export const PRIORITY_MAP = {
   "Medium":    3,
   "High":      4,
   "Very High": 5,
+  "Major":     4,
 };
 
 const TICKET_ITEM_RESOURCES = [
@@ -52,16 +55,28 @@ const TICKET_ITEM_RESOURCES = [
   "Unmanaged",
 ];
 
+const normalizeSearchName = (value) => String(value ?? "")
+  .trim()
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .toLowerCase();
+
 export async function resolveItem(name) {
+  const searchedName = normalizeSearchName(name);
+
+  if (!searchedName) {
+    return null;
+  }
+
   for (const resource of TICKET_ITEM_RESOURCES) {
     try {
       const items = await getItems(resource, {
         searchText: name,
-        range: "0-10",
+        range: "0-100",
       });
 
       if (Array.isArray(items)) {
-        const match = items.find(item => item.name === name);
+        const match = items.find(item => normalizeSearchName(item.name) === searchedName);
         if (match) {
           return { itemtype: resource, id: match.id };
         }
@@ -76,7 +91,21 @@ export async function resolveItem(name) {
 }
 
 export const ItemsToTableau = (value) => {
-  return JSON.parse(value);
+  if (!value) return [];
+
+  try {
+    const parsed = JSON.parse(value);
+    if (!Array.isArray(parsed)) return [];
+
+    return [...new Set(
+      parsed
+        .map(item => item?.toString().trim())
+        .filter(Boolean)
+    )];
+  } catch (error) {
+    console.warn(`Items invalides : ${value}`);
+    return [];
+  }
 }
 
 const FILE2_SCHEMA = {

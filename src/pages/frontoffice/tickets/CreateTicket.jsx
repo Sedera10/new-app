@@ -205,7 +205,7 @@ export default function CreateTicket() {
 
                         {/* LIGNE 3 : UTILISATEUR */}
                         <div className="mb-4">
-                            <label className="form-label fw-semibold text-secondary small text-uppercase">Utilisateur concerné *</label>
+                            <label className="form-label fw-semibold text-secondary small text-uppercase">Utilisateur concerné</label>
                             <div className="input-group mb-2">
                                 <span className="input-group-text bg-white border-secondary-subtle text-muted"><i className="bi bi-search"></i></span>
                                 <input
@@ -235,10 +235,14 @@ export default function CreateTicket() {
                                                             pointerEvents: loading ? "none" : "auto",
                                                             transition: "all 0.15s ease"
                                                         }}
-                                                        onClick={() => !loading && setSelectedUser(u)}
+                                                        onClick={() => !loading && setSelectedUser(isSel ? null : u)}
                                                     >
                                                         <span className="small fw-medium text-truncate me-2"><i className="bi bi-person me-1.5"></i>{u.name}</span>
-                                                        {isSel && <i className="bi bi-check-circle-fill text-white small"></i>}
+                                                        {isSel ? (
+                                                            <i className="bi bi-check-circle-fill text-white small"></i>
+                                                        ) : (
+                                                            <i className="bi bi-circle text-muted small"></i>
+                                                        )}
                                                     </div>
                                                 </div>
                                             );

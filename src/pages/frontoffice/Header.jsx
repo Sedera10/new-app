@@ -10,7 +10,7 @@ export default function Header () {
                     <a href="/myglpi/elements" className="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-medium">
                         <i className="bi bi-collection me-1"></i> Elements
                     </a>
-                    <a href="/myglpi/elements" className="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-medium">
+                    <a href="/myglpi/tickets/create" className="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-medium">
                         <i className="bi bi-collection me-1"></i> Add Ticket
                     </a>
                     <a href="/myglpi/tickets" className="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-medium">

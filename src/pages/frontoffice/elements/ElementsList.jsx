@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getElementItems, ListeElements } from "../../../services/elements/ElementService";
+import { getElementImage, getElementItems, ListeElements } from "../../../services/elements/ElementService";
 import { getItems, initSession } from "../../../services/api";
 import Header from "../Header";
 
@@ -99,6 +99,51 @@ export default function ElementsList() {
     const indexDebut = (page - 1) * limit;
     const indexFin = indexDebut + limit;
     const elementsDeLaPage = filteredElements.slice(indexDebut, indexFin);
+    const imageLoadKey = elementsDeLaPage
+        .filter(el => !el.imageLoaded)
+        .map(el => `${el.itemtype}-${el.id}`)
+        .join("|");
+
+    useEffect(() => {
+        if (!imageLoadKey) return;
+
+        let mounted = true;
+        const elementsToLoad = elementsDeLaPage.filter(el => !el.imageLoaded);
+
+        const loadVisibleImages = async () => {
+            const images = await Promise.all(
+                elementsToLoad.map(async el => ({
+                    key: `${el.itemtype}-${el.id}`,
+                    image: await getElementImage(el.itemtype, el.id),
+                }))
+            );
+
+            if (!mounted) return;
+
+            const imagesByKey = Object.fromEntries(
+                images.map(({ key, image }) => [key, image])
+            );
+
+            setAllElements(currentElements =>
+                currentElements.map(el => {
+                    const key = `${el.itemtype}-${el.id}`;
+                    if (!(key in imagesByKey)) return el;
+
+                    return {
+                        ...el,
+                        image: imagesByKey[key],
+                        imageLoaded: true,
+                    };
+                })
+            );
+        };
+
+        loadVisibleImages();
+
+        return () => {
+            mounted = false;
+        };
+    }, [imageLoadKey]);
 
     const getPages = () => {
         const max = 5;

@@ -9,17 +9,42 @@ export default function TicketsPage() {
     const [tickets, setTickets] = useState([]);
     const [loading, setLoading] = useState(false);
 
+    const statusBadgeClass = (status) => {
+        const statusName = getStatusName(status);
+        if (statusName === 'Nouveau') return "text-bg-primary";
+        if (statusName === 'Closed' || statusName === 'Terminé') return "text-bg-success";
+        if (statusName === 'In progress') return "text-bg-warning text-dark";
+        if (statusName === 'Solved') return "text-bg-info text-dark";
+        return "text-bg-secondary";
+    };
+
+    const priorityClass = (priority) => {
+        const priorityName = getPriorityName(priority);
+        if (priorityName?.toLowerCase().includes("très")) return "text-danger fw-bold";
+        if (priorityName?.toLowerCase().includes("haute")) return "text-warning fw-bold";
+        return "text-secondary fw-medium";
+    };
+
+    const handleViewTicket = async (idTicket) => {
+        try {
+            const det = await DetailsTicket(idTicket);
+            setSelectedTicket(det);
+        } catch (error) {
+            console.error(`Erreur lors du chargement du ticket #${idTicket} :`, error);
+        }
+    };
+
     useEffect(() => {
         const formatTickets = async () => {
             try {
                 setLoading(true);
-                const initTickets = await getItems("Ticket");
+                const initTickets = await getItems("Ticket", { range:"0-9999"});
                 const formatted = (initTickets || []).map(ticket => ({
                     info: ticket 
                 }));
                 setTickets(formatted);
             } catch (error) {
-                console.error("Erreur lors du chargement des tickets :",error);
+                console.error("Erreur lors du chargement des tickets :", error);
             } finally {
                 setLoading(false);
             }
@@ -46,31 +71,35 @@ export default function TicketsPage() {
     }
 
     return (
-        <div className="container p-4">
-            <div className="d-flex justify-content-between align-items-center mb-1">
-                <h1 className="mb-4 fw-bold" style={{ color : "var(--text-secondary)"}}>Gestion des Tickets</h1>
-                <div className="mt-3 pt-2 border-top border-light">
+        <div className="container-fluid px-4 py-4" style={{ backgroundColor: "var(--bg-body)", minHeight: "calc(100vh - 70px)" }}>
+            <div className="card shadow-sm border-0 rounded-4 p-4 mb-4" style={{ backgroundColor: "var(--bg-card)" }}>
+                <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                    <div>
+                        <h1 className="fw-bold m-0" style={{ color: "var(--text-secondary)" }}>Gestion des Tickets</h1>
+                        <p className="text-muted small m-0 mt-1">Consultez, visualisez et supprimez les tickets GLPI.</p>
+                    </div>
                     <a 
                         href="/myglpi/tickets/create" 
-                        className="btn btn-sm btn-outline-secondary w-100 rounded-pill py-2 fw-medium d-flex align-items-center justify-content-center gap-1"
+                        className="btn rounded-pill px-4 py-2 fw-medium d-flex align-items-center justify-content-center gap-2 shadow-sm"
+                        style={{ backgroundColor: "var(--bg-btn-primary)", color: "var(--text-btn-primary)" }}
                     >
-                        <i className="bi bi-plus-circle"></i> Ajouter 1 ticket
+                        <i className="bi bi-plus-circle"></i> Ajouter un ticket
                     </a>
                 </div>
             </div>
 
-            <div className="card shadow-sm border-0 rounded-4 p-4" style={{ backgroundColor: "var(--bg-card)" }}>
+            <div className="card shadow-sm border-0 rounded-4 overflow-hidden" style={{ backgroundColor: "var(--bg-card)" }}>
                 <div className="table-responsive">
-                    <table className="table table-hover align-middle">
-                        <thead className="border-bottom text-muted">
+                    <table className="table table-hover align-middle m-0">
+                        <thead className="border-bottom border-light" style={{ backgroundColor: "rgba(0,0,0,0.02)" }}>
                             <tr>
-                                <th>#</th>
-                                <th>Titre</th>
-                                <th>Type</th>
-                                <th>Priorité</th>
-                                <th>Statut</th>
-                                <th>Date</th>
-                                <th className="text-end">Actions</th>
+                                <th className="text-muted small text-uppercase fw-bold ps-2">#</th>
+                                <th className="text-muted small text-uppercase fw-bold">Titre</th>
+                                <th className="text-muted small text-uppercase fw-bold">Type</th>
+                                <th className="text-muted small text-uppercase fw-bold">Priorité</th>
+                                <th className="text-muted small text-uppercase fw-bold">Statut</th>
+                                <th className="text-muted small text-uppercase fw-bold">Date</th>
+                                <th className="text-muted small text-uppercase fw-bold text-end pe-2">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -81,46 +110,58 @@ export default function TicketsPage() {
                                             className="spinner-border text-secondary"
                                             role="status"
                                         />
-                                        <p className="mt-2 mb-0">
+                                        <p className="mt-2 mb-0 text-muted">
                                             Chargement des tickets...
                                         </p>
                                     </td>
                                 </tr>
+                            ) : tickets.length === 0 ? (
+                                <tr>
+                                    <td colSpan="7" className="text-center text-muted py-5">
+                                        Aucun ticket disponible.
+                                    </td>
+                                </tr>
                             ) : (
                                 tickets.map(ticket => (
-                                    <tr key={ticket.info.id}>
-                                        <td className="fw-medium text-secondary">{ticket.info.id}</td>
-                                        <td className="fw-bold">{ticket.info.name}</td>
+                                    <tr key={ticket.info.id} className="border-bottom border-light last-border-0">
+                                        <td className="fw-bold text-secondary ps-2">#{ticket.info.id}</td>
+                                        <td className="fw-semibold text-dark">
+                                            {ticket.info.name}
+                                            <div className="small text-muted text-truncate" style={{ maxWidth: "360px" }}>
+                                                {ticket.info.content || "Aucune description"}
+                                            </div>
+                                        </td>
                                         <td>
-                                            <span className={`badge rounded-pill text-bg-light border text-dark`}>
+                                            <span className={`badge rounded-pill px-3 py-2 border bg-white text-dark`}>
                                                 {getTypeName(ticket.info.type)}
                                             </span>
                                         </td>
-                                        <td>{getPriorityName(ticket.info.priority)}</td>
+                                        <td className={priorityClass(ticket.info.priority)}>
+                                            {getPriorityName(ticket.info.priority)}
+                                        </td>
                                         <td>
-                                            <span className={`badge rounded-pill ${
-                                                getStatusName(ticket.info.status) === 'New' ? 'text-bg-primary' :
-                                                getStatusName(ticket.info.status) === 'Solved' ? 'text-bg-success' : 'text-bg-warning'
-                                            }`}>
+                                            <span className={`badge rounded-pill px-3 py-2 ${statusBadgeClass(ticket.info.status)}`}>
                                                 {getStatusName(ticket.info.status)}
                                             </span>
                                         </td>
-                                        <td className="text-muted small">{ticket.info.date}</td>
-                                        <td className="text-end">
+                                        <td className="text-muted small">
+                                            <i className="bi bi-calendar3 me-1"></i>
+                                            {ticket.info.date}
+                                        </td>
+                                        <td className="text-end pe-2">
                                             <button 
-                                                className="btn btn-sm btn-secondary rounded-pill px-3 me-2"
-                                                onClick={async () => {
-                                                    const det = await DetailsTicket(ticket.info.id);
-                                                    setSelectedTicket(det);
-                                                }}
+                                                className="btn btn-sm btn-outline-secondary rounded-pill px-3 me-2 shadow-none"
+                                                onClick={() => handleViewTicket(ticket.info.id)}
                                                 data-bs-toggle="modal" 
                                                 data-bs-target="#ticketModal"
+                                                title="Voir les détails"
                                             >
                                                 <i className="bi bi-eye"></i>
                                             </button>
                                             <button 
-                                                className="btn btn-sm btn-secondary rounded-pill px-3"
+                                                className="btn btn-sm btn-outline-danger rounded-pill px-3 shadow-none"
                                                 onClick={() => handleDelete(ticket.info.id)}
+                                                title="Supprimer"
                                             >
                                                 <i className="bi bi-trash"></i>
                                             </button>

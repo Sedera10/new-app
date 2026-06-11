@@ -126,15 +126,6 @@ export const ListeElements = async () => {
             })
         );
 
-        // Les images (Attention : cela peut faire beaucoup de requêtes d'un coup si le parc est immense)
-        const imageMap = {};
-        await Promise.all(
-            sorted.map(async el => {
-                imageMap[`${el.itemtype}-${el.id}`] =
-                    await getElementImage(el.itemtype, el.id);
-            })
-        );
-
         return sorted.map(el => {
             const { modelField } = getModel(el.itemtype);
             return {
@@ -142,7 +133,8 @@ export const ListeElements = async () => {
                 stateName: statesMap[el.states_id] || "N/A",
                 location: locationsMap[el.locations_id] || "N/A",
                 model: modelMaps[el.itemtype]?.[el[modelField]] || "N/A",
-                image: imageMap[`${el.itemtype}-${el.id}`] || null,
+                image: null,
+                imageLoaded: false,
                 icon: getIconByType(el.itemtype),
             };
         });

@@ -1,6 +1,6 @@
-import { parseFile1CSV, extractStatus, extractLocations, extractManufacturers, extractModels, extractUsers, normalizeName, getModelTableName } from './helper';
+import { parseFile1CSV, extractStatus, extractLocations, extractManufacturers, extractModels, extractUsers, normalizeName, getModelTableName, getModelFieldName } from './helper';
 import { normalizeNumber, normalizeCsvValue } from '../Global';
-import { resetAllData } from "../../resetdata/resetService";
+import { rollbackImportedResources } from "../rollback";
 import { createItem, searchItems } from '../../api'
 
 export const importFile1 = async (csvFile, onProgress = () => {}) => {
@@ -183,20 +183,33 @@ export const importFile1 = async (csvFile, onProgress = () => {}) => {
 
         const payload = {
           name : name,
-          serial : serial,
-          otherserial : serial,
-          computermodels_id : modelId,
-          states_id: statusId,
-          entities_id : 0,
-          locations_id : normalizeNumber(locationId),
-          manufacturers_id : normalizeNumber(manufacturerId),
-          users_id : userId
+          entities_id : 0
         };
+
+        if (serial) {
+          payload.serial = serial;
+          payload.otherserial = serial;
+        }
+
+        if (statusId) {
+          payload.states_id = normalizeNumber(statusId);
+        }
+
+        if (locationId) {
+          payload.locations_id = normalizeNumber(locationId);
+        }
+
+        if (manufacturerId) {
+          payload.manufacturers_id = normalizeNumber(manufacturerId);
+        }
+
+        if (userId) {
+          payload.users_id = normalizeNumber(userId);
+        }
         
         // Ajouter le modèle avec la bonne propriété selon le type
         if (modelId) {
-          const modelProperty = `${resource.toLowerCase()}models`;
-          payload[modelProperty] = normalizeNumber(modelId);
+          payload[getModelFieldName(resource)] = normalizeNumber(modelId);
         }
 
         const elementCreated = await createItem(resource, payload);
@@ -217,9 +230,11 @@ export const importFile1 = async (csvFile, onProgress = () => {}) => {
     return results;
     
   } catch (error) {
-    if (touchedResources.size > 0) {
-      await resetAllData(Array.from(touchedResources));
-    }
+    await rollbackImportedResources({
+      touchedResources: results.touchedResources,
+      onProgress,
+      label: 'Erreur file1'
+    });
     results.errors.push(`Erreur generale: ${error.message}`);
     throw error;
   }

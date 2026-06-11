@@ -384,13 +384,13 @@ const styles = {
   },
   toast: {
     position: 'fixed',
-    top: '20px',
+    top: '80px',
     right: '20px',
     color: '#fff',
     padding: '12px 24px',
     borderRadius: '8px',
     boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-    zIndex: 1000,
+    zIndex: 1100,
     fontSize: '14px',
     fontWeight: '500',
   }
