@@ -1,7 +1,7 @@
 import { parseFile2CSV, TYPE_MAP, STATUS_MAP_GLPI, PRIORITY_MAP, resolveItem, ItemsToTableau } from './helper';
 import { normalizeDate, normalizeNumber } from '../Global';
 import { resetAllData } from "../../resetdata/resetService";
-import { createItem } from '../../api';
+import { createItem, updateItem } from '../../api';
 
 export const importFile2 = async (csvFile, result1, onProgress = () => {}) => {
   const results = {
@@ -55,7 +55,7 @@ export const importFile2 = async (csvFile, result1, onProgress = () => {}) => {
           content:     desc,
           date:        normalizeDate(daty, lera),
           type:        typeId,
-          status:      statusId,
+          status:      1,
           priority:    prioriteId,
           entities_id: 0,
         };
@@ -83,6 +83,14 @@ export const importFile2 = async (csvFile, result1, onProgress = () => {}) => {
             } else {
               results.errors.push(`Élément introuvable : ${itemName}`);
             }
+          }
+          if (statusId !== 1) {
+            await updateItem("Ticket", idTicket, {
+              status: statusId,
+              date_mod: normalizeDate(daty, lera), 
+              _users_id_assign: 4
+            });
+            console.log(`Mis a jour de status de ticket #${idTicket} vers ${statusId}`)
           }
         }
 

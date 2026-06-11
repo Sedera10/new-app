@@ -11,7 +11,7 @@ export default function Dashboard() {
 
     useEffect(() => {
         Promise.all([
-            DetailsElements().then(rows => rows.filter(r => r.count > 0)),
+            DetailsElements(),
             DetailsTickets(),
         ])
             .then(([elements, tickets]) => {

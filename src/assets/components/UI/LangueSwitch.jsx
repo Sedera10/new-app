@@ -13,7 +13,7 @@ const LangueSwitch = ({ label, isChecked, onToggle }) => {
         style={{ cursor: 'pointer' }}
       />
       <label 
-        className="form-check-label" 
+        className="form-check-label fw-bold text-secondary" 
         htmlFor="glpiStatusSwitch" 
         style={{ cursor: 'pointer', userSelect: 'none' }}
       >

@@ -1,9 +1,10 @@
-import React, {useState} from 'react';
-import './Sidebar.css';
-import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "./Sidebar.css";
 
-export default function Sidebar({show, setShow}) {
+export default function Sidebar({ show, setShow }) {
     const [activeLink, setActiveLink] = useState("Accueil");
+    const [configOpen, setConfigOpen] = useState(false);
     const navigate = useNavigate();
 
     const links = [
@@ -11,18 +12,22 @@ export default function Sidebar({show, setShow}) {
         { name: "Status config", icon: "bi-pc-display", path: "/myglpi/admin/status" },
         { name: "Gestion Tickets", icon: "bi-ticket-detailed", path: "/myglpi/admin/tickets" },
     ];
+
+    const goTo = (name, path) => {
+        setActiveLink(name);
+        navigate(path);
+    };
+
     return (
         <aside className={`sidebar d-flex flex-column ${show ? "is-open" : "is-collapsed"}`}>
             <div className="logo d-flex justify-content-between align-items-center mb-1">
-                <a
-                    href="#"
-                    className="brand text-decoration-none fs-5 fw-bold"
-                >
+                <a href="#" className="brand text-decoration-none fs-5 fw-bold">
                     <span className="hide-on-collapse">My Own GLPI</span>
                 </a>
 
                 <button
-                    className="btn toggle p-1 border-0" /* border-0 enlève le contour Bootstrap au clic */
+                    type="button"
+                    className="btn toggle p-1 border-0"
                     onClick={() => setShow(!show)}
                     title="Toggle menu"
                 >
@@ -37,10 +42,9 @@ export default function Sidebar({show, setShow}) {
                     <li className="nav-item mb-1" key={link.name}>
                         <a
                             href="#"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                setActiveLink(link.name);
-                                if (link.path) navigate(link.path);
+                            onClick={(event) => {
+                                event.preventDefault();
+                                goTo(link.name, link.path);
                             }}
                             className={`nav-link d-flex align-items-center rounded p-2 ${activeLink === link.name ? "nav-link-active" : ""}`}
                         >
@@ -51,57 +55,70 @@ export default function Sidebar({show, setShow}) {
                         </a>
                     </li>
                 ))}
-                {/* Dropdown */}
-                <li className="nav-item dropdown mb-1">
-                    <a
-                        href="#"
-                        className={`nav-link d-flex align-items-center justify-content-between rounded p-2 dropdown-toggle ${activeLink === "Configuration" ? "nav-link-active" : ""}`}
-                        data-bs-toggle="dropdown"
-                        aria-expanded="false"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            setActiveLink("Configuration"); // Remplacez par le nom fixe ou dynamique souhaité
+
+                <li className="nav-item mb-1">
+                    <button
+                        type="button"
+                        className={`nav-link sidebar-dropdown-toggle d-flex align-items-center justify-content-between rounded p-2 w-100 border-0 ${activeLink === "Configuration" || activeLink.startsWith("Config Data/") ? "nav-link-active" : ""}`}
+                        aria-expanded={configOpen}
+                        onClick={() => {
+                            setActiveLink("Configuration");
+                            setConfigOpen((isOpen) => !isOpen);
                         }}
                     >
-                        {/* Partie gauche : Icône + Texte */}
-                        <div className="d-flex align-items-center">
+                        <span className="d-flex align-items-center">
                             <i className="bi bi-gear fs-5 text-center" style={{ width: "24px" }}></i>
                             <span className="ms-3 hide-on-collapse fw-medium">
                                 Config Data
                             </span>
-                        </div>
-                    </a>
+                        </span>
+                        <i className={`bi ${configOpen ? "bi-chevron-up" : "bi-chevron-down"} hide-on-collapse`}></i>
+                    </button>
 
-                    {/* Le menu caché qui va s'ouvrir proprement */}
-                    <ul className="dropdown-menu dropdown-menu-end border-0 bg-transparent">
-                        <li>
-                            <a 
-                                className={`dropdown-item nav-link fw-medium rounded ${activeLink === "Config Data/Import données" ? "nav-link-active" : ""}`}
-                                href="#" 
-                                onClick={(e) => { e.preventDefault(); setActiveLink("Config Data/Import données"); navigate("/myglpi/admin/import") }}
+                    {configOpen && (
+                        <ul className="nav flex-column sidebar-submenu mt-1">
+                            <li>
+                                <a
+                                    className={`nav-link fw-medium rounded ${activeLink === "Config Data/Import données" ? "nav-link-active" : ""}`}
+                                    href="#"
+                                    onClick={(event) => {
+                                        event.preventDefault();
+                                        goTo("Config Data/Import données", "/myglpi/admin/import");
+                                    }}
                                 >
-                                <i className="bi bi-download fs-6 text-center" style={{ width: "20px" }}></i>
-                                <span className='ms-2'>Import données</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a 
-                                className={`dropdown-item nav-link fw-medium rounded ${activeLink === "Config Data/Réinitialisation" ? "nav-link-active" : ""}`}
-                                href="#"
-                                onClick={(e) => { e.preventDefault(); setActiveLink("Config Data/Réinitialisation"); navigate("/myglpi/admin/reset") }}
+                                    <i className="bi bi-download fs-6 text-center" style={{ width: "20px" }}></i>
+                                    <span className="ms-2 hide-on-collapse">Import données</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a
+                                    className={`nav-link fw-medium rounded ${activeLink === "Config Data/Réinitialisation" ? "nav-link-active" : ""}`}
+                                    href="#"
+                                    onClick={(event) => {
+                                        event.preventDefault();
+                                        goTo("Config Data/Réinitialisation", "/myglpi/admin/reset");
+                                    }}
                                 >
-                                <i className="bi bi-arrow-counterclockwise fs-6 text-center" style={{ width: "20px" }}></i>
-                                <span className='ms-2'>Réinitialisation</span>
-                            </a>
-                        </li>
-                    </ul>
+                                    <i className="bi bi-arrow-counterclockwise fs-6 text-center" style={{ width: "20px" }}></i>
+                                    <span className="ms-2 hide-on-collapse">Réinitialisation</span>
+                                </a>
+                            </li>
+                        </ul>
+                    )}
                 </li>
             </ul>
 
             <hr className="divider" />
 
-            {/* Structure du profil optimisée */}
-            <div className="d-flex align-items-center profile-container toggle" style={{ cursor: 'pointer' }}>
+            <a
+                href="/"
+                className="btn btn-sm btn-secondary rounded-pill px-3 fw-medium"
+                style={{ backgroundColor: "var(--bg-btn-primary)", borderColor: "var(--bg-btn-primary)" }}
+            >
+                <i className="bi bi-question-circle me-1"></i> Frontoffice
+            </a>
+
+            <div className="d-flex align-items-center profile-container toggle" style={{ cursor: "pointer" }}>
                 <i className="bi bi-person-circle fs-4 text-center" style={{ width: "24px" }}></i>
                 <span className="profile-title fw-semibold ms-3 hide-on-collapse">
                     SEDERA ETU-3343

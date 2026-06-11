@@ -1,6 +1,6 @@
 import { getPriorityName, getStatusName, getTypeName } from "../../../services/tickets/TicketService";
 
-export default function ModalTicket({ selectedTicket }) {
+export default function ModalTicket({ selectedTicket, handleReset }) {
     // La modale reste TOUJOURS dans le DOM pour Bootstrap.
     // Si aucun ticket n'est sélectionné, on cache simplement le contenu pour éviter les crashs.
     const hasData = !!selectedTicket;
@@ -19,7 +19,7 @@ export default function ModalTicket({ selectedTicket }) {
                             <i className="bi bi-ticket-perforated text-secondary"></i>
                             Fiche Ticket {hasData ? `#${selectedTicket.info.id}` : ""}
                         </h5>
-                        <button type="button" className="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" onClick={handleReset} className="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
 
                     {/* Corps avec hauteur max et défilement */}
@@ -185,7 +185,7 @@ export default function ModalTicket({ selectedTicket }) {
 
                     {/* Footer épuré */}
                     <div className="modal-footer border-top-0 px-4 py-3 bg-light rounded-bottom-4">
-                        <button type="button" className="btn btn-secondary rounded-pill px-4 shadow-sm" data-bs-dismiss="modal">
+                        <button type="button" onClick={handleReset} className="btn btn-secondary rounded-pill px-4 shadow-sm" data-bs-dismiss="modal">
                             Fermer la fiche
                         </button>
                     </div>

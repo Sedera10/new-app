@@ -105,3 +105,16 @@
     padding-left: 0.5rem;
     color: var(--text-sidebar);
 }
+
+.sidebar .sidebar-dropdown-toggle {
+    background: transparent;
+    text-align: left;
+}
+
+.sidebar .sidebar-submenu {
+    padding-left: 0.75rem;
+}
+
+.sidebar.is-collapsed .sidebar-submenu {
+    padding-left: 0;
+}

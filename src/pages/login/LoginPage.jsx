@@ -69,28 +69,6 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleSubmit}>
-            <div className="mb-3">
-              <label className="form-label fw-medium text-secondary small mb-1">Identifiant</label>
-              <div 
-                className="input-group input-group-lg border rounded-3 overflow-hidden focus-ring-primary"
-                style={{ backgroundColor: "#F8F9FA" }}
-              >
-                <span className="input-group-text bg-transparent border-0 text-secondary">
-                  <i className="bi bi-person"></i>
-                </span>
-                <input 
-                  type="text" 
-                  className="form-control border-0 shadow-none bg-transparent" 
-                  style={{ fontSize: "0.9rem" }}
-                  placeholder="Saisissez votre identifiant"
-                  name="username"
-                  value={credentials.username}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </div>
-
             <div className="mb-4">
               <label className="form-label fw-medium text-secondary small mb-1">Mot de passe</label>
               <div 

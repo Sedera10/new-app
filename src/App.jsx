@@ -14,6 +14,7 @@ import CreateTicket from './pages/frontoffice/tickets/CreateTicket';
 import TicketsList from './pages/frontoffice/tickets/TicketsList';
 import StatusConf from './pages/backoffice/sqlite/StatusConfig';
 import TicketsSimple from './pages/frontoffice/tickets/TicketSimple';
+import IndexPage from './pages/IndexPage';
 
 function App() {
   
@@ -21,7 +22,8 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/myglpi/elements" replace/>} />
+        <Route path="/" element={<IndexPage/>} />
+        <Route path="/myglpi" element={<IndexPage/>} />
         <Route path="/myglpi/elements" element={<ElementsList />} />
         <Route path="/myglpi/tickets" element={<TicketsList />} />
         <Route path="/myglpi/tickets_2" element={<TicketsSimple />} />
