@@ -4,6 +4,7 @@ import { createItem, getItems, updateItem } from '../../../services/api';
 import { fetchStatuses } from '../../../services/conf/StatusService';
 import { DetailsTicket, getPriorityName, getStatusName, getTypeName } from '../../../services/tickets/TicketService';
 import ModalTicket from '../../../assets/components/UI/ModalTicket';
+import LangueSwitch from '../../../assets/components/UI/LangueSwitch';
 
 export default function TicketsList() {
     const [columns, setColumns] = useState([]);
@@ -11,6 +12,7 @@ export default function TicketsList() {
     const [selectedTicket, setSelectedTicket] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [tenygasy, setTenygasy] = useState(false);
 
     // Fonction centrale de chargement des données
     const loadData = async () => {
@@ -20,9 +22,13 @@ export default function TicketsList() {
             const statuses = await fetchStatuses();
             
             // On récupère les détails complets (coûts, historique, etc.) pour chaque ticket
-            const detailedTickets = await Promise.all(
-                (rawTickets || []).map(ticket => DetailsTicket(ticket.id))
-            );
+            // const detailedTickets = await Promise.all(
+            //     (rawTickets || []).map(ticket => DetailsTicket(ticket.id))
+            // );
+
+            const detailedTickets = (rawTickets || []).map(ticket => ({
+                info: ticket 
+            }));
 
             const nextTicketsByColumn = {};
             statuses.forEach(status => {
@@ -152,6 +158,10 @@ export default function TicketsList() {
         }
     };
 
+    const handleResetSelected = () => {
+        setSelectedTicket(null);
+    }
+
     return (
         <div className='min-vh-100 bg-light position-relative'>
             <Header />
@@ -171,8 +181,15 @@ export default function TicketsList() {
             <div className="container-fluid px-4 py-4">
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <div>
-                        <h1 className="fw-bold m-0" style={{ color: "var(--text-secondary)" }}>Tableau Kanban</h1>
+                        <h1 className="fw-bold m-0" style={{ color: "var(--text-secondary)" }}>Tableau Kanban des Tickets</h1>
                         <p className="text-muted small mb-0">Suivez et modifiez l'état d'avancement de vos tickets par glisser-déposer.</p>
+                    </div>
+                    <div>
+                        <LangueSwitch
+                            label={tenygasy ? "Gasy" : "Original"} 
+                            isChecked={tenygasy} 
+                            onToggle={() => setTenygasy(!tenygasy)} 
+                        />
                     </div>
                     {error && <div className="alert alert-danger py-2 px-3 mb-0 rounded-3 small">{error}</div>}
                 </div>
@@ -191,7 +208,6 @@ export default function TicketsList() {
                                 style={{
                                     flex: "0 0 320px",
                                     minHeight: "500px",
-                                    // CORRECTION : Utilise 'currentColumn?.color' issu de sqlite à la place de columnKey.color
                                     backgroundColor: currentColumn?.color || '#ffffff'
                                 }}
                             >
@@ -202,7 +218,7 @@ export default function TicketsList() {
                                             className="d-inline-block rounded-circle" 
                                             style={{ width: "10px", height: "10px", backgroundColor: currentColumn?.color || '#6c757d' }}
                                         />
-                                        {columnKey}
+                                        {tenygasy ? currentColumn.gasy_name : columnKey}
                                     </h6>
                                     <span className="badge bg-secondary-subtle text-secondary rounded-pill px-2.5 small">
                                         {ticketsByColumn[columnKey]?.length || 0}
@@ -216,7 +232,10 @@ export default function TicketsList() {
                                             key={ticket.info.id}
                                             draggable
                                             onDragStart={(e) => handleDragStart(e, ticket.info.id, columnKey)}
-                                            onClick={() => setSelectedTicket(ticket)}
+                                            onClick={async () => {
+                                                const details = await DetailsTicket(ticket.info.id);
+                                                setSelectedTicket(details);
+                                            }}
                                             data-bs-toggle="modal"
                                             data-bs-target="#ticketModal"
                                             className="card border-0 shadow-sm p-3 bg-white"
@@ -264,58 +283,7 @@ export default function TicketsList() {
             </div>
 
             {/* Modal Bootstrap */}
-            <ModalTicket selectedTicket={selectedTicket} /> 
+            <ModalTicket selectedTicket={selectedTicket} handleReset={handleResetSelected} /> 
         </div>
     );
 }
-
-    // const ChangeToInprogres = async (ticket) => {
-    //   try {
-    //       setError('')
-    //       const id = ticket.id
-    //       const statusNow = ticket.status
-    //       const payload = {
-    //           status: 2,
-    //           _users_id_assign: 4
-    //       }
-    //       if(statusNow == 2) return
-    //       await updateItem("Ticket", id, payload)
-    //   } catch (er) {
-    //       console.log("Erreur de changement de status vers 'In progress' ",er)
-    //       setError(er.message)
-    //   }
-    // }
-
-    // const ChangeToTermine = async (ticket) => {
-    //   try {
-    //       setError('');
-    //       const currentState = ticket.status;
-    //       if (currentState === 5 || currentState === 6) return;
-    //       if (currentState === 1) {
-    //           await updateItem("Ticket", ticket.id, { _users_id_assign: 4 });
-    //       }
-
-    //       const payload = {
-    //           itemtype: "Ticket",
-    //           items_id: ticket.id,
-    //           content: `Solution appliquée via l'application. (Statut précédent : ${currentState})`
-    //       };
-          
-    //       await createItem("ITILSolution", payload);
-    //   } catch (er) {
-    //       console.log("Erreur de changement de status vers 'Terminé' ", er);
-    //       setError(er.message);
-    //   }
-    // }
-
-    // const ChangeToNouveau = async (ticket) => {
-    //   try {
-    //       setError('');
-    //       if (ticket.status === 1) return;
-
-    //       await updateItem("Ticket", ticket.id, { status: 1, _users_id_assign: 0 });
-    //   } catch (er) {
-    //       console.log("Erreur de changement de status vers 'Nouveau' ", er);
-    //       setError(er.message);
-    //   }
-    // }

@@ -16,7 +16,7 @@ export default function Header () {
                     <a href="/myglpi/tickets" className="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-medium">
                         <i className="bi bi-collection me-1"></i> Tickets
                     </a>
-                    <a href="/myglpi/admin/dashboard" className="btn btn-sm btn-secondary rounded-pill px-3 fw-medium" style={{ backgroundColor: "var(--bg-btn-primary)", borderColor: "var(--bg-btn-primary)" }}>
+                    <a href="/myglpi/admin" className="btn btn-sm btn-secondary rounded-pill px-3 fw-medium" style={{ backgroundColor: "var(--bg-btn-primary)", borderColor: "var(--bg-btn-primary)" }}>
                         <i className="bi bi-question-circle me-1"></i> Backoffice
                     </a>
                 </div>

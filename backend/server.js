@@ -36,7 +36,7 @@ INSERT OR IGNORE INTO ticket_status (
     'In progress','efa manao','#FFE6C7',2
 ),
 (
-    'Terminé','vita','#DFF4DF',5
+    'Terminé','vita','#DFF4DF',6
 )
 `);
 

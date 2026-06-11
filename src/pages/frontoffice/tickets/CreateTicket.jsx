@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getItems, createItem } from "../../../services/api";
+import { getItems, createItem, updateItem } from "../../../services/api";
 import { CountElements, getElementItems, ListeElements } from "../../../services/elements/ElementService";
 import { MapToTableau } from "../../../services/tickets/TicketService";
 import { STATUS_MAP, PRIORITY_MAP } from "../../../services/imports/file2/helper";
@@ -77,7 +77,7 @@ export default function CreateTicket() {
             name: title,
             content: description,
             type: toGLPINumber(type),
-            status: toGLPINumber(status),
+            status: 1,
             priority: toGLPINumber(priority),
             _users_id_requester: selectedUser ? selectedUser.id : null,
             date: formatGLPIDate(dateTime) || getCurrentGLPIDate(),
@@ -98,6 +98,11 @@ export default function CreateTicket() {
                     }
                 }
             }
+            if(toGLPINumber(status) !== 1) {
+                await updateItem("Ticket", ticket.id, {status: toGLPINumber(status)})
+            }
+            
+
             setConfirmMessage("Ticket créé avec succès !");
             setConfirmType("success");
             setShowConfirm(true);

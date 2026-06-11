@@ -14,6 +14,7 @@ import CreateTicket from './pages/frontoffice/tickets/CreateTicket';
 import TicketsList from './pages/frontoffice/tickets/TicketsList';
 import StatusConf from './pages/backoffice/sqlite/StatusConfig';
 import TicketsSimple from './pages/frontoffice/tickets/TicketSimple';
+import IndexPage from './pages/IndexPage';
 
 function App() {
   
@@ -21,50 +22,29 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/myglpi/elements" replace/>} />
+        <Route path="/" element={<IndexPage/>} />
+        <Route path="/myglpi" element={<IndexPage/>} />
         <Route path="/myglpi/elements" element={<ElementsList />} />
         <Route path="/myglpi/tickets" element={<TicketsList />} />
         <Route path="/myglpi/tickets_2" element={<TicketsSimple />} />
         <Route path="/myglpi/tickets/create" element={<CreateTicket />} />
         {/* Backoffice */}
         <Route path="/myglpi/admin/login" element={<LoginPage />} />
-        <Route path="/myglpi/admin" element={ <Layout/> } >
-          <Route 
-            path="/myglpi/admin/reset" 
-            element={
-              <ProtectedRoute>
-                <ResetPage />
-              </ProtectedRoute>} 
-          />
-          <Route 
-            path="/myglpi/admin/import" 
-            element={
-              <ProtectedRoute>
-                <ImportPage />
-              </ProtectedRoute>} 
-          />
-          <Route 
-            path="/myglpi/admin/dashboard" 
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>} 
-          />
-          <Route 
-            path="/myglpi/admin/tickets" 
-            element={
-              <ProtectedRoute>
-                <TicketsPage />
-              </ProtectedRoute>} 
-          />
-          <Route 
-            path="/myglpi/admin/status" 
-            element={
-              <ProtectedRoute>
-                <StatusConf />
-              </ProtectedRoute>} 
-          />
+        <Route 
+          path="/myglpi/admin" 
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          } 
+        >
+          <Route path="/myglpi/admin/reset" element={<ResetPage />} />
+          <Route path="/myglpi/admin/import" element={<ImportPage />} />
+          <Route path="/myglpi/admin/dashboard" element={<Dashboard />} />
+          <Route path="/myglpi/admin/tickets" element={<TicketsPage />} />
+          <Route path="/myglpi/admin/status" element={<StatusConf />} />
         </Route>
+
       </Routes>
 
     </BrowserRouter>
