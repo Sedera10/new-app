@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Sidebar.css";
+import { removeAdminAuth } from "../../../services/auth/authCookie";
 
 export default function Sidebar({ show, setShow }) {
     const [activeLink, setActiveLink] = useState("Accueil");
@@ -17,6 +18,11 @@ export default function Sidebar({ show, setShow }) {
         setActiveLink(name);
         navigate(path);
     };
+
+    const handleLogout = () => {
+        removeAdminAuth();
+        navigate("/")
+    }
 
     return (
         <aside className={`sidebar d-flex flex-column ${show ? "is-open" : "is-collapsed"}`}>
@@ -111,7 +117,7 @@ export default function Sidebar({ show, setShow }) {
             <hr className="divider" />
 
             <a
-                href="/"
+                onClick={handleLogout}
                 className="btn btn-sm btn-secondary rounded-pill px-3 fw-medium"
                 style={{ backgroundColor: "var(--bg-btn-primary)", borderColor: "var(--bg-btn-primary)" }}
             >

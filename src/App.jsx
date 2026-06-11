@@ -30,43 +30,21 @@ function App() {
         <Route path="/myglpi/tickets/create" element={<CreateTicket />} />
         {/* Backoffice */}
         <Route path="/myglpi/admin/login" element={<LoginPage />} />
-        <Route path="/myglpi/admin" element={ <Layout/> } >
-          <Route 
-            path="/myglpi/admin/reset" 
-            element={
-              <ProtectedRoute>
-                <ResetPage />
-              </ProtectedRoute>} 
-          />
-          <Route 
-            path="/myglpi/admin/import" 
-            element={
-              <ProtectedRoute>
-                <ImportPage />
-              </ProtectedRoute>} 
-          />
-          <Route 
-            path="/myglpi/admin/dashboard" 
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>} 
-          />
-          <Route 
-            path="/myglpi/admin/tickets" 
-            element={
-              <ProtectedRoute>
-                <TicketsPage />
-              </ProtectedRoute>} 
-          />
-          <Route 
-            path="/myglpi/admin/status" 
-            element={
-              <ProtectedRoute>
-                <StatusConf />
-              </ProtectedRoute>} 
-          />
+        <Route 
+          path="/myglpi/admin" 
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          } 
+        >
+          <Route path="/myglpi/admin/reset" element={<ResetPage />} />
+          <Route path="/myglpi/admin/import" element={<ImportPage />} />
+          <Route path="/myglpi/admin/dashboard" element={<Dashboard />} />
+          <Route path="/myglpi/admin/tickets" element={<TicketsPage />} />
+          <Route path="/myglpi/admin/status" element={<StatusConf />} />
         </Route>
+
       </Routes>
 
     </BrowserRouter>

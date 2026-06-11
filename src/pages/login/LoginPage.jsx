@@ -2,34 +2,34 @@ import { useState } from "react";
 import { initSession } from "../../services/api";
 import { useNavigate } from "react-router-dom";
 import ConfirmDialog from "../../assets/components/UI/ConfirmDialog";
+import { setAdminAuth } from "../../services/auth/authCookie";
 
 export default function LoginPage() {
-  const [credentials, setCredentials] = useState({ username: "glpi", password: "glpi" });
+  const [credentials, setCredentials] = useState({ password: "glpi" });
+  const [ password, setPassword] = useState('admin3343');
   const [loading, setLoading] = useState(false);
   const [errorDialog, setErrorDialog] = useState({ isOpen: false, message: "" });
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setCredentials((prev) => ({ ...prev, [name]: value }));
+    const value = e.target.value;
+    setPassword(value);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    try {
-      const auth = await initSession(credentials.username, credentials.password);
-      if (auth) {
-        navigate("/myglpi/admin/dashboard");
-      } else {
-        setErrorDialog({ isOpen: true, message: "Identifiants incorrects ou problème de connexion." });
-      }
-    } catch (error) {
-      setErrorDialog({ isOpen: true, message: error.message || "Impossible de se connecter au serveur." });
-    } finally {
-      setLoading(false);
+    const mdp = import.meta.env.VITE_ADMIN_PASSWORD;
+    if(password === mdp) {
+      setAdminAuth()
+      navigate("/myglpi/admin/dashboard");
+      setLoading(false)
+    } else {
+      setErrorDialog({ isOpen: true, message: "Mot de passe incorrects" });
+      setLoading(false)
     }
+
   };
 
   return (
@@ -84,7 +84,7 @@ export default function LoginPage() {
                   style={{ fontSize: "0.9rem" }}
                   placeholder="Saisissez votre mot de passe"
                   name="password"
-                  value={credentials.password}
+                  value={password}
                   onChange={handleChange}
                   required
                 />
