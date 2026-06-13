@@ -92,18 +92,19 @@ export const DetailsTicket = async (idTicket) => {
         const costAssociate = costs.map(cost => ({
             id: cost.id,
             name: cost.name,
+            
+            durationMinutes: Math.round(Number(cost.actiontime || 0) / 60),
 
             fixedCost: Number(cost.cost_fixed || 0),
             timeCost: Number(cost.cost_time || 0),
             materialCost: Number(cost.cost_material || 0),
 
             totalCost:
+                (Number(cost.actiontime || 0) * Number(cost.cost_time || 0)) / 3600 +
                 Number(cost.cost_fixed || 0) +
-                Number(cost.cost_time || 0) +
                 Number(cost.cost_material || 0),
 
-            durationMinutes:
-                Math.round(Number(cost.actiontime || 0) / 60)
+            
         }));
         // ==========================
         // Elements

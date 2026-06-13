@@ -30,8 +30,7 @@ export const DetailsElements = async () => {
       return { item: resource, count };
     })
   );
-  return rows.filter(row => row.count > 0);
-  // return rows;
+   return rows;
 };
 
 // === TOTAL TICKET (DETAILS) ===

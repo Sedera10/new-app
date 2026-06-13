@@ -15,6 +15,8 @@ import TicketsList from './pages/frontoffice/tickets/TicketsList';
 import StatusConf from './pages/backoffice/sqlite/StatusConfig';
 import TicketsSimple from './pages/frontoffice/tickets/TicketSimple';
 import IndexPage from './pages/IndexPage';
+import ModifTicket from './pages/frontoffice/tickets/ModifTicket';
+import ItemCostReport from './pages/backoffice/repports/ItemCostReport';
 
 function App() {
   
@@ -26,6 +28,8 @@ function App() {
         <Route path="/myglpi" element={<IndexPage/>} />
         <Route path="/myglpi/elements" element={<ElementsList />} />
         <Route path="/myglpi/tickets" element={<TicketsList />} />
+        <Route path="/myglpi/reports" element={<ItemCostReport />} />
+        <Route path="/myglpi/tickets/:id" element={<ModifTicket />} />
         <Route path="/myglpi/tickets_2" element={<TicketsSimple />} />
         <Route path="/myglpi/tickets/create" element={<CreateTicket />} />
         {/* Backoffice */}

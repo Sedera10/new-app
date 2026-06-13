@@ -37,6 +37,7 @@ export default function TicketsPage() {
     useEffect(() => {
         const formatTickets = async () => {
             try {
+                setPage(1);
                 setLoading(true);
                 const initTickets = await getItems("Ticket", { range:"0-9999"});
                 const formatted = (initTickets || []).map(ticket => ({
@@ -69,6 +70,25 @@ export default function TicketsPage() {
             setLoading(false)
         }
     }
+
+    // Pagination
+    const [page, setPage] = useState(1);
+    const [limit] = useState(15); 
+    const totalPages = Math.ceil(tickets.length / limit);
+    const indexDebut = (page - 1) * limit;
+    const indexFin = indexDebut + limit;
+    const elementsDeLaPage = tickets.slice(indexDebut, indexFin);
+    const getPages = () => {
+        const max = 5;
+        const start = Math.max(1, page - 2);
+        const end = Math.min(totalPages, start + max - 1);
+        return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+    };
+
+    const goToPage = (newPage) => {
+        if (newPage < 1 || newPage > totalPages) return;
+        setPage(newPage);
+    };
 
     return (
         <div className="container-fluid px-4 py-4" style={{ backgroundColor: "var(--bg-body)", minHeight: "calc(100vh - 70px)" }}>
@@ -122,7 +142,7 @@ export default function TicketsPage() {
                                     </td>
                                 </tr>
                             ) : (
-                                tickets.map(ticket => (
+                                elementsDeLaPage.map(ticket => (
                                     <tr key={ticket.info.id} className="border-bottom border-light last-border-0">
                                         <td className="fw-bold text-secondary ps-2">#{ticket.info.id}</td>
                                         <td className="fw-semibold text-dark">
@@ -171,6 +191,36 @@ export default function TicketsPage() {
                             )}
                         </tbody>
                     </table>
+                    {/* ================= PAGINATION FRONTEND ACCORDÉE AUX FILTRES ================= */}
+                        {totalPages > 1 && (
+                            <nav className="d-flex justify-content-center mt-4 mb-2">
+                                <ul className="pagination pagination-sm gap-1 mb-0">
+                                    <li className={`page-item ${page === 1 ? 'disabled' : ''}`}>
+                                        <button className="page-link rounded-3 border px-3 shadow-none" onClick={() => goToPage(page - 1)}>
+                                            <i className="bi bi-chevron-left"></i>
+                                        </button>
+                                    </li>
+                                    
+                                    {getPages().map(p => (
+                                        <li key={p} className={`page-item ${p === page ? 'active' : ''}`}>
+                                            <button 
+                                                className="page-link rounded-3 border px-3 shadow-none fw-medium"
+                                                style={p === page ? { backgroundColor: "var(--bg-btn-primary)", borderColor: "var(--bg-btn-primary)", color: "#fff" } : { color: "var(--text-secondary)" }}
+                                                onClick={() => goToPage(p)}
+                                            >
+                                                {p}
+                                            </button>
+                                        </li>
+                                    ))}
+
+                                    <li className={`page-item ${page === totalPages ? 'disabled' : ''}`}>
+                                        <button className="page-link rounded-3 border px-3 shadow-none" onClick={() => goToPage(page + 1)}>
+                                            <i className="bi bi-chevron-right"></i>
+                                        </button>
+                                    </li>
+                                </ul>
+                            </nav>
+                        )}
                 </div>
             </div>
 

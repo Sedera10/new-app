@@ -12,7 +12,7 @@ export default function IndexPage() {
                 const token = sessionStorage.getItem("glpi_session_token");
 
                 if (!token) {
-                    await initSession();
+                    await initSession("glpi", "glpi");
                 }
                 console.log("session : ",sessionStorage.getItem("glpi_session_token"))
                 navigate("/myglpi/elements"); // URL de redirection

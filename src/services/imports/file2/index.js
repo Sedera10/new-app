@@ -47,11 +47,12 @@ export const importFile2 = async (csvFile, result1, onProgress = () => {}) => {
         const statusId = STATUS_MAP_GLPI[ligne.status?.trim()] ?? 1;
         const prioriteId = PRIORITY_MAP[ligne.priority?.trim()] ?? 3;
         const items = ItemsToTableau(ligne.items);
+        const ticketDate = normalizeDate(daty, lera);
 
         const payload = {
           name: titre,
           content: desc,
-          date: normalizeDate(daty, lera),
+          date: ticketDate,
           type: typeId,
           status: 1,
           priority: prioriteId,
@@ -92,13 +93,23 @@ export const importFile2 = async (csvFile, result1, onProgress = () => {}) => {
             }
           }
 
-          if (statusId !== 1) {
-            await updateItem("Ticket", idTicket, {
-              status: statusId,
-              date_mod: normalizeDate(daty, lera),
-              _users_id_assign: 4
-            });
-            console.log(`Mis a jour de status de ticket #${idTicket} vers ${statusId}`);
+          if (ticketDate || statusId !== 1) {
+            const updatePayload = {};
+
+            if (ticketDate) {
+              updatePayload.date = ticketDate;
+            }
+
+            if (statusId !== 1) {
+              Object.assign(updatePayload, {
+                status: statusId,
+                ...(ticketDate ? { date_mod: ticketDate } : {}),
+                _users_id_assign: 4
+              });
+            }
+
+            await updateItem("Ticket", idTicket, updatePayload);
+            console.log(`Mis a jour du ticket #${idTicket} avec date ${ticketDate}`);
           }
         }
       } catch (error) {

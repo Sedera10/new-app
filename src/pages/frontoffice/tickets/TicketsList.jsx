@@ -5,6 +5,10 @@ import { fetchStatuses } from '../../../services/conf/StatusService';
 import { DetailsTicket, getPriorityName, getStatusName, getTypeName } from '../../../services/tickets/TicketService';
 import ModalTicket from '../../../assets/components/UI/ModalTicket';
 import LangueSwitch from '../../../assets/components/UI/LangueSwitch';
+import CoutModal from '../../../assets/components/UI/CoutModal';
+import OuvertureModal from '../../../assets/components/UI/OuvertureModal';
+import { Modal } from 'bootstrap';
+import { createReopeningFee } from '../../../services/conf/SuperCostService';
 
 export default function TicketsList() {
     const [columns, setColumns] = useState([]);
@@ -14,20 +18,18 @@ export default function TicketsList() {
     const [error, setError] = useState('');
     const [tenygasy, setTenygasy] = useState(false);
 
-    // Fonction centrale de chargement des données
+    // États d'attente pour l'ouverture des Modals complexes
+    const [pendingTicket, setPendingTicket] = useState(null); // Pour clôture (CoutModal)
+    const [pendingReopenTicket, setPendingReopenTicket] = useState(null); // Pour réouverture (OuvertureModal)
+
     const loadData = async () => {
         try {
             setLoading(true);
-            const rawTickets = await getItems("Ticket", { range:"0-9999"});
+            const rawTickets = await getItems("Ticket", { range: "0-9999" });
             const statuses = await fetchStatuses();
-            
-            // On récupère les détails complets (coûts, historique, etc.) pour chaque ticket
-            // const detailedTickets = await Promise.all(
-            //     (rawTickets || []).map(ticket => DetailsTicket(ticket.id))
-            // );
 
             const detailedTickets = (rawTickets || []).map(ticket => ({
-                info: ticket 
+                info: ticket
             }));
 
             const nextTicketsByColumn = {};
@@ -47,89 +49,105 @@ export default function TicketsList() {
         }
     };
 
-    const ChangeToInprogres = async (ticket) => {
-      try {
-          setError('')
-          const id = ticket.id
-          const statusNow = ticket.status
-          const payload = {
-              status: 2,
-              _users_id_assign: 4
-          }
-          if(statusNow == 2) return
-          await updateItem("Ticket", id, payload)
-      } catch (er) {
-          console.log("Erreur de changement de status vers 'In progress' ",er)
-          setError(er.message)
-      }
-    }
+    // Action finale appelée après soumission du formulaire d'annulation pourcentage
+    const handleReopenFromClosed = async (percentage) => {
+        if (!pendingReopenTicket) return;
 
-    const ChangeToTermine = async (ticket) => {
-      try {
-          setError('');
-          const currentState = ticket.status;
-          if (currentState === 5 || currentState === 6) return;
-          if (currentState === 1) {
-              await updateItem("Ticket", ticket.id, { _users_id_assign: 4 });
-          }
+        try {
+            setLoading(true);
+            setError("");
+            
+            // 1. Appel API SQLite (Calcul des frais, suppression dernier super-cost)
+            await createReopeningFee(pendingReopenTicket.info.id,percentage);
 
-          const payload = {
-              itemtype: "Ticket",
-              items_id: ticket.id,
-              content: `Solution appliquée via l'application. (Statut précédent : ${currentState})`
-          };
-          
-          await createItem("ITILSolution", payload);
-      } catch (er) {
-          console.log("Erreur de changement de status vers 'Terminé' ", er);
-          setError(er.message);
-      }
-    }
+            // 2. Changement de statut GLPI vers "In Progress" (2) et assignation technicien (4)
+            await updateItem("Ticket", pendingReopenTicket.info.id, {
+                status: 2,
+                _users_id_assign: 4
+            });
 
-    const ChangeToNouveau = async (ticket) => {
-      try {
-          setError('');
-          if (ticket.status === 1) return;
+            // 3. Rechargement global
+            await loadData();
+            setPendingReopenTicket(null);
+        } catch (err) {
+            console.error("Erreur lors du traitement de la réouverture :", err);
+            setError(err.message || "Une erreur est survenue lors de la réouverture.");
+            throw err; // Permet au modal d'intercepter l'erreur et de l'afficher
+        } finally {
+            setLoading(false);
+        }
+    };
 
-          await updateItem("Ticket", ticket.id, { status: 1, _users_id_assign: 0 });
-      } catch (er) {
-          console.log("Erreur de changement de status vers 'Nouveau' ", er);
-          setError(er.message);
-      }
-    }
+    const confirmMoveToTermine = async (ticketToMove, targetStatusLink) => {
+        try {
+            setLoading(true);
+            await createItem("ITILSolution", {
+                itemtype: "Ticket",
+                items_id: ticketToMove.info.id,
+                content: "Solution appliquée via l'application."
+            });
+
+            await updateItem("Ticket", ticketToMove.info.id, {
+                status: targetStatusLink
+            });
+
+            await loadData();
+        } catch (er) {
+            setError(er.message);
+            await loadData();
+        } finally {
+            setLoading(false);
+            setPendingTicket(null);
+        }
+    };
 
     useEffect(() => {
         loadData();
     }, []);
 
-    // Début du glissement d'un ticket
     const handleDragStart = (e, ticketId, sourceColumn) => {
         e.dataTransfer.setData('ticketId', ticketId);
-        // CORRECTION : On utilise bien 'sourceColumnName' ici pour concorder avec handleDrop
         e.dataTransfer.setData('sourceColumnName', sourceColumn);
     };
 
-    // Autoriser le survol pour permettre le dépôt
     const handleDragOver = (e) => {
         e.preventDefault();
     };
 
-    // Dépôt du ticket dans une nouvelle colonne
     const handleDrop = async (e, targetColumnName) => {
         const ticketId = e.dataTransfer.getData('ticketId');
         const sourceColumnName = e.dataTransfer.getData('sourceColumnName');
 
-        // Si déposé dans la même colonne, aucun traitement requis
         if (sourceColumnName === targetColumnName) return;
 
-        // Trouver le ticket déplacé et le lien GLPI cible
         const ticketToMove = ticketsByColumn[sourceColumnName]?.find(t => String(t.info.id) === String(ticketId));
+        
+        const sourceStatusObj = columns.find(c => c.name === sourceColumnName);
+        const sourceStatusLink = Number(sourceStatusObj?.glpi_link);
+
         const targetStatusObj = columns.find(c => c.name === targetColumnName);
-        const targetStatusLink = targetStatusObj?.glpi_link;
+        const targetStatusLink = Number(targetStatusObj?.glpi_link);
 
-        if (!ticketToMove || targetStatusLink === undefined) return;
+        if (!ticketToMove || sourceStatusLink === undefined || targetStatusLink === undefined) return;
 
-        // Mise à jour optimiste de l'interface (instantané pour l'utilisateur)
+        // Condition Interceptée : Passage de Terminé (6) à En cours (2)
+        if (sourceStatusLink === 6 && targetStatusLink === 2) {
+            setPendingReopenTicket(ticketToMove);
+            return; // Bloque le drop direct pour attendre la validation du formulaire
+        }
+
+        // Passage standard vers Terminé (6)
+        if (targetStatusLink === 6) {
+            setPendingTicket({
+                ticket: ticketToMove,
+                sourceColumnName,
+                targetColumnName,
+                targetStatus: targetStatusLink
+            });
+            return;
+        }
+
+        // Déplacement optimiste par défaut pour les autres statuts
         setTicketsByColumn(prev => {
             const sourceList = prev[sourceColumnName].filter(t => String(t.info.id) !== String(ticketId));
             const updatedTicket = {
@@ -144,34 +162,24 @@ export default function TicketsList() {
             };
         });
 
-        // Persistance de la modification dans l'API
         try {
             setLoading(true);
             await updateItem("Ticket", ticketId, { status: targetStatusLink });
         } catch (er) {
             console.error("Erreur lors du changement de statut :", er);
             setError(er.message);
-            // En cas d'échec, on recharge proprement les données réelles
             await loadData();
         } finally {
             setLoading(false);
         }
     };
 
-    const handleResetSelected = () => {
-        setSelectedTicket(null);
-    }
-
     return (
         <div className='min-vh-100 bg-light position-relative'>
             <Header />
 
-            {/* Spinner global de chargement */}
             {loading && (
-                <div 
-                    className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-white bg-opacity-50" 
-                    style={{ zIndex: 1050 }}
-                >
+                <div className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-white bg-opacity-50" style={{ zIndex: 1050 }}>
                     <div className="spinner-border text-secondary" role="status" style={{ width: '3rem', height: '3rem' }}>
                         <span className="visually-hidden">Action en cours...</span>
                     </div>
@@ -186,19 +194,18 @@ export default function TicketsList() {
                     </div>
                     <div>
                         <LangueSwitch
-                            label={tenygasy ? "Gasy" : "Original"} 
-                            isChecked={tenygasy} 
-                            onToggle={() => setTenygasy(!tenygasy)} 
+                            label={tenygasy ? "Gasy" : "Original"}
+                            isChecked={tenygasy}
+                            onToggle={() => setTenygasy(!tenygasy)}
                         />
                     </div>
                     {error && <div className="alert alert-danger py-2 px-3 mb-0 rounded-3 small">{error}</div>}
                 </div>
 
-                {/* CORRECTION : Ajout de 'justify-content-center' pour centrer les colonnes au milieu de la page */}
                 <div className="d-flex gap-3 overflow-x-auto pb-3 align-items-start justify-content-center" style={{ minHeight: "calc(100vh - 180px)" }}>
                     {Object.keys(ticketsByColumn).map((columnKey, index) => {
                         const currentColumn = columns.find(c => c.name === columnKey);
-                        
+
                         return (
                             <div
                                 key={columnKey}
@@ -211,13 +218,9 @@ export default function TicketsList() {
                                     backgroundColor: currentColumn?.color || '#ffffff'
                                 }}
                             >
-                                {/* Header de la colonne */}
                                 <div className="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-light">
                                     <h6 className="text-uppercase fw-bold m-0 small d-flex align-items-center gap-2" style={{ color: "var(--text-secondary)" }}>
-                                        <span 
-                                            className="d-inline-block rounded-circle" 
-                                            style={{ width: "10px", height: "10px", backgroundColor: currentColumn?.color || '#6c757d' }}
-                                        />
+                                        <span className="d-inline-block rounded-circle" style={{ width: "10px", height: "10px", backgroundColor: currentColumn?.color || '#6c757d' }} />
                                         {tenygasy ? currentColumn.gasy_name : columnKey}
                                     </h6>
                                     <span className="badge bg-secondary-subtle text-secondary rounded-pill px-2.5 small">
@@ -225,7 +228,6 @@ export default function TicketsList() {
                                     </span>
                                 </div>
 
-                                {/* Liste des Cartes de Tickets */}
                                 <div className="d-flex flex-column gap-2 flex-grow-1 overflow-y-auto" style={{ maxHeight: "65vh" }}>
                                     {ticketsByColumn[columnKey]?.map((ticket) => (
                                         <div
@@ -268,10 +270,7 @@ export default function TicketsList() {
 
                                 {index === 0 && (
                                     <div className="mt-3 pt-2 border-top border-light">
-                                        <a 
-                                            href="/myglpi/tickets/create" 
-                                            className="btn btn-sm btn-outline-secondary w-100 rounded-pill py-2 fw-medium d-flex align-items-center justify-content-center gap-1"
-                                        >
+                                        <a href="/myglpi/tickets/create" className="btn btn-sm btn-outline-secondary w-100 rounded-pill py-2 fw-medium d-flex align-items-center justify-content-center gap-1">
                                             <i className="bi bi-plus-circle"></i> Ajouter 1 ticket
                                         </a>
                                     </div>
@@ -282,8 +281,13 @@ export default function TicketsList() {
                 </div>
             </div>
 
-            {/* Modal Bootstrap */}
-            <ModalTicket selectedTicket={selectedTicket} handleReset={handleResetSelected} /> 
+            {/* Modals Applicatifs */}
+            <ModalTicket selectedTicket={selectedTicket} handleReset={() => setSelectedTicket(null)} />
+            <CoutModal pendingTicket={pendingTicket} onClose={() => setPendingTicket(null)} onConfirm={confirmMoveToTermine} />
+            
+            {/* CORRECTION : Liaison correcte des props et de l'état d'annulation réouverture */}
+            <OuvertureModal 
+                pendingTicket={pendingReopenTicket} onClose={() => setPendingReopenTicket(null)} onConfirm={handleReopenFromClosed} />
         </div>
     );
 }
